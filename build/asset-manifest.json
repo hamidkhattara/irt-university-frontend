@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.1bd8afdd.css",
+    "main.js": "/static/js/main.0a47c23a.js",
+    "static/js/38.5f52f5be.chunk.js": "/static/js/38.5f52f5be.chunk.js",
+    "static/media/login-bg.jpg": "/static/media/login-bg.f5e165a8043f510b3db6.jpg",
+    "static/media/irt-logo.png": "/static/media/irt-logo.4fe0d268e14c7282bd89.png",
+    "index.html": "/index.html",
+    "main.1bd8afdd.css.map": "/static/css/main.1bd8afdd.css.map",
+    "main.0a47c23a.js.map": "/static/js/main.0a47c23a.js.map",
+    "38.5f52f5be.chunk.js.map": "/static/js/38.5f52f5be.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1bd8afdd.css",
+    "static/js/main.0a47c23a.js"
+  ]
+}
