@@ -85,11 +85,48 @@ const NewsEventsPage = () => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
+  const handleLoadMore = (type) => {
+    switch (type) {
+      case "events":
+        setVisibleEvents(prev => prev + 3);
+        break;
+      case "news":
+        setVisibleNews(prev => prev + 3);
+        break;
+      case "press":
+        setVisiblePress(prev => prev + 3);
+        break;
+      case "announce":
+        setVisibleAnnounce(prev => prev + 3);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleShowLess = (type) => {
+    switch (type) {
+      case "events":
+        setVisibleEvents(3);
+        break;
+      case "news":
+        setVisibleNews(3);
+        break;
+      case "press":
+        setVisiblePress(3);
+        break;
+      case "announce":
+        setVisibleAnnounce(3);
+        break;
+      default:
+        break;
+    }
+  };
+
   const renderPostCard = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
   
-    // Ensure content is defined before accessing its length
     const safeContent = content || "";
   
     return (
@@ -135,6 +172,7 @@ const NewsEventsPage = () => {
       </div>
     );
   };
+
   const renderSection = (titleKey, list, visibleCount, type, sectionId) => (
     <section id={sectionId} className="container mx-auto px-8 py-16">
       <h2 className="text-4xl font-bold text-blue-900 text-center">{t(titleKey)}</h2>
