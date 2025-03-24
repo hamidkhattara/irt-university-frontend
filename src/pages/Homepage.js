@@ -9,7 +9,16 @@ export default function Homepage() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [expandedPosts, setExpandedPosts] = useState({});
   const [visiblePosts, setVisiblePosts] = useState(3);
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({ 
+    image: null, 
+    title: "", 
+    content: "", 
+    video: "", 
+    pdfUrl: "", 
+    showPdf: false,
+    pdfLoading: false,
+    pdfError: null
+  });
   const { i18n, t } = useTranslation();
 
   const baseURL = process.env.REACT_APP_API_URL || "link";
@@ -58,12 +67,42 @@ export default function Homepage() {
       video: post.video || "",
       pdfUrl: post.pdfUrl || "",
       showPdf: false,
+      pdfLoading: false,
+      pdfError: null
     });
   };
 
-  const handleOpenPdf = (e) => {
+  const handleOpenPdf = async (e) => {
     e.stopPropagation();
-    setModalData((prev) => ({ ...prev, showPdf: true }));
+    
+    if (!modalData.pdfUrl) {
+      setModalData(prev => ({ ...prev, pdfError: "No PDF URL provided" }));
+      return;
+    }
+
+    setModalData(prev => ({ ...prev, pdfLoading: true, pdfError: null }));
+    
+    try {
+      // Check if PDF is accessible
+      const response = await fetch(modalData.pdfUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error(`PDF not accessible (HTTP ${response.status})`);
+      }
+      
+      setModalData(prev => ({ 
+        ...prev, 
+        showPdf: true,
+        pdfLoading: false 
+      }));
+    } catch (error) {
+      console.error("PDF loading error:", error);
+      setModalData(prev => ({ 
+        ...prev, 
+        showPdf: false,
+        pdfLoading: false,
+        pdfError: error.message 
+      }));
+    }
   };
 
   const formatContent = (text) => {
@@ -172,7 +211,16 @@ export default function Homepage() {
       {modalData.image && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-          onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
+          onClick={() => setModalData({ 
+            image: null, 
+            title: "", 
+            content: "", 
+            video: "", 
+            pdfUrl: "", 
+            showPdf: false,
+            pdfLoading: false,
+            pdfError: null
+          })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
             {modalData.video ? (
@@ -202,18 +250,68 @@ export default function Homepage() {
             {modalData.pdfUrl && (
               <div className="mt-4 text-center">
                 <button
-                  onClick={(e) => handleOpenPdf(e)}
-                  className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+                  onClick={handleOpenPdf}
+                  disabled={modalData.pdfLoading}
+                  className={`px-4 py-2 rounded transition ${modalData.pdfLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-900 text-white hover:bg-blue-700'}`}
                 >
-                  {t("Open PDF")}
+                  {modalData.pdfLoading ? t("Loading...") : 
+                   modalData.showPdf ? t("Hide PDF") : t("Open PDF")}
                 </button>
-                {modalData.showPdf && (
-                  <div className="mt-4">
+                
+                {modalData.pdfError && (
+                  <div className="mt-2 text-red-600">
+                    {t("Error loading PDF:")} {modalData.pdfError}
+                    <div className="mt-2">
+                      <a 
+                        href={modalData.pdfUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t("Try opening in new tab")}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {modalData.showPdf && !modalData.pdfError && (
+                  <div className="mt-4" style={{ height: '600px' }}>
+                    {/* Option 1: Using iframe (works in most browsers) */}
                     <iframe
-                      src={modalData.pdfUrl}
-                      className="w-full h-[600px] rounded-lg"
+                      src={`${modalData.pdfUrl}#view=fitH`}
+                      className="w-full h-full rounded-lg border"
                       title="PDF Viewer"
+                      frameBorder="0"
                     />
+
+                    {/* Option 2: Using object tag (fallback) */}
+                    {/* <object
+                      data={`${modalData.pdfUrl}#view=fitH`}
+                      type="application/pdf"
+                      className="w-full h-full rounded-lg border"
+                    >
+                      <p>{t("PDF cannot be displayed. Please")} <a href={modalData.pdfUrl} download>{t("download it")}</a> {t("instead.")}</p>
+                    </object> */}
+
+                    <div className="mt-4 flex justify-center gap-4">
+                      <a 
+                        href={modalData.pdfUrl} 
+                        download 
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t("Download PDF")}
+                      </a>
+                      <a 
+                        href={modalData.pdfUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t("Open in New Tab")}
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>
