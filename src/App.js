@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { I18nextProvider, useTranslation } from 'react-i18next';
-import i18n from './i18n';
 
 // Public Pages
 import Homepage from './pages/Homepage';
