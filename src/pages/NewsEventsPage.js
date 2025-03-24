@@ -29,6 +29,45 @@ const NewsEventsPage = () => {
 
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // Core functions defined first
+  const handleLoadMore = (type) => {
+    switch (type) {
+      case "events":
+        setVisibleEvents(prev => prev + 3);
+        break;
+      case "news":
+        setVisibleNews(prev => prev + 3);
+        break;
+      case "press":
+        setVisiblePress(prev => prev + 3);
+        break;
+      case "announce":
+        setVisibleAnnounce(prev => prev + 3);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleShowLess = (type) => {
+    switch (type) {
+      case "events":
+        setVisibleEvents(3);
+        break;
+      case "news":
+        setVisibleNews(3);
+        break;
+      case "press":
+        setVisiblePress(3);
+        break;
+      case "announce":
+        setVisibleAnnounce(3);
+        break;
+      default:
+        break;
+    }
+  };
+
   // Helper functions
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);
@@ -74,44 +113,6 @@ const NewsEventsPage = () => {
   const handleOpenPdf = (e) => {
     e.stopPropagation();
     setModalData((prev) => ({ ...prev, showPdf: true }));
-  };
-
-  const handleLoadMore = (type) => {
-    switch (type) {
-      case "events":
-        setVisibleEvents(prev => prev + 3);
-        break;
-      case "news":
-        setVisibleNews(prev => prev + 3);
-        break;
-      case "press":
-        setVisiblePress(prev => prev + 3);
-        break;
-      case "announce":
-        setVisibleAnnounce(prev => prev + 3);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleShowLess = (type) => {
-    switch (type) {
-      case "events":
-        setVisibleEvents(3);
-        break;
-      case "news":
-        setVisibleNews(3);
-        break;
-      case "press":
-        setVisiblePress(3);
-        break;
-      case "announce":
-        setVisibleAnnounce(3);
-        break;
-      default:
-        break;
-    }
   };
 
   const toggleReadMore = (postId) => {
