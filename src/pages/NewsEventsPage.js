@@ -8,6 +8,7 @@ const NewsEventsPage = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
+  // State declarations
   const [newsList, setNewsList] = useState([]);
   const [eventsList, setEventsList] = useState([]);
   const [pressReleases, setPressReleases] = useState([]);
@@ -17,15 +18,24 @@ const NewsEventsPage = () => {
   const [visiblePress, setVisiblePress] = useState(3);
   const [visibleAnnounce, setVisibleAnnounce] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({ 
+    image: null, 
+    title: "", 
+    content: "", 
+    video: "", 
+    pdfUrl: "", 
+    showPdf: false 
+  });
 
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // Helper functions
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);
     return match ? match[1] : null;
   };
 
+  // Data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,6 +56,7 @@ const NewsEventsPage = () => {
     fetchData();
   }, [baseURL]);
 
+  // Event handlers
   const handleImageClick = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description || "";
@@ -63,26 +74,6 @@ const NewsEventsPage = () => {
   const handleOpenPdf = (e) => {
     e.stopPropagation();
     setModalData((prev) => ({ ...prev, showPdf: true }));
-  };
-
-  const formatContent = (text) => {
-    if (!text) return "";
-    return text
-      .split("\n")
-      .map((line, index) => {
-        if (line.trim().startsWith("•")) {
-          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
-        } else if (line.trim() === "") {
-          return "";
-        } else {
-          return `<p style="text-align: left;">${line.trim()}</p>`;
-        }
-      })
-      .join("");
-  };
-
-  const toggleReadMore = (postId) => {
-    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
   const handleLoadMore = (type) => {
@@ -123,12 +114,33 @@ const NewsEventsPage = () => {
     }
   };
 
+  const toggleReadMore = (postId) => {
+    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  // Content formatting
+  const formatContent = (text) => {
+    if (!text) return "";
+    return text
+      .split("\n")
+      .map((line, index) => {
+        if (line.trim().startsWith("•")) {
+          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="text-align: left;">${line.trim()}</p>`;
+        }
+      })
+      .join("");
+  };
+
+  // Component rendering functions
   const renderPostCard = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
-  
     const safeContent = content || "";
-  
+
     return (
       <div key={post._id} className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105">
         {post.video ? (
@@ -204,6 +216,7 @@ const NewsEventsPage = () => {
     </section>
   );
 
+  // Main component render
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
@@ -211,10 +224,13 @@ const NewsEventsPage = () => {
         <h1 className="text-5xl font-extrabold">{t("newsEvents.title")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">{t("newsEvents.subtitle")}</p>
       </section>
+      
       {renderSection("newsEvents.events", eventsList, visibleEvents, "events", "upcoming-events")}
       {renderSection("newsEvents.webinars", newsList, visibleNews, "news", "webinars")}
       {renderSection("newsEvents.press", pressReleases, visiblePress, "press", "press-releases")}
       {renderSection("newsEvents.announcements", announcements, visibleAnnounce, "announce", "announcements")}
+      
+      {/* Modal */}
       {modalData.image && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
