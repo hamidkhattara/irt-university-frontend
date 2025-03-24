@@ -21,7 +21,7 @@ export default function Homepage() {
   });
   const { i18n, t } = useTranslation();
 
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const baseURL = process.env.REACT_APP_API_URL || "https://irt-university-backend.onrender.com";
 
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);
@@ -59,13 +59,19 @@ export default function Homepage() {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content || "";
+    
+    // Force HTTPS for PDF URLs
+    let pdfUrl = post.pdfUrl || "";
+    if (pdfUrl.startsWith("http://")) {
+      pdfUrl = pdfUrl.replace("http://", "https://");
+    }
 
     setModalData({
       image: post.imageUrl || "https://via.placeholder.com/600x400?text=Post+Image",
       title,
       content,
       video: post.video || "",
-      pdfUrl: post.pdfUrl || "",
+      pdfUrl,
       showPdf: false,
       pdfLoading: false,
       pdfError: null
@@ -83,7 +89,12 @@ export default function Homepage() {
     setModalData(prev => ({ ...prev, pdfLoading: true, pdfError: null }));
     
     try {
-      // Check if PDF is accessible
+      // Verify URL is HTTPS
+      if (!modalData.pdfUrl.startsWith("https://")) {
+        throw new Error("PDF must be served over HTTPS");
+      }
+
+      // Test PDF accessibility
       const response = await fetch(modalData.pdfUrl, { method: 'HEAD' });
       if (!response.ok) {
         throw new Error(`PDF not accessible (HTTP ${response.status})`);
@@ -276,23 +287,12 @@ export default function Homepage() {
 
                 {modalData.showPdf && !modalData.pdfError && (
                   <div className="mt-4" style={{ height: '600px' }}>
-                    {/* Option 1: Using iframe (works in most browsers) */}
                     <iframe
                       src={`${modalData.pdfUrl}#view=fitH`}
                       className="w-full h-full rounded-lg border"
                       title="PDF Viewer"
                       frameBorder="0"
                     />
-
-                    {/* Option 2: Using object tag (fallback) */}
-                    {/* <object
-                      data={`${modalData.pdfUrl}#view=fitH`}
-                      type="application/pdf"
-                      className="w-full h-full rounded-lg border"
-                    >
-                      <p>{t("PDF cannot be displayed. Please")} <a href={modalData.pdfUrl} download>{t("download it")}</a> {t("instead.")}</p>
-                    </object> */}
-
                     <div className="mt-4 flex justify-center gap-4">
                       <a 
                         href={modalData.pdfUrl} 
