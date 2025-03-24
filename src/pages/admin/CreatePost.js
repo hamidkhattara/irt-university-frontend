@@ -16,7 +16,7 @@ const CreatePost = () => {
   });
 
   const [message, setMessage] = useState('');
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const handleImageChange = (e) => {
     if (postData.video) {

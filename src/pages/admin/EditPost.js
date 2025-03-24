@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 const EditPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const [form, setForm] = useState({
     title: '',

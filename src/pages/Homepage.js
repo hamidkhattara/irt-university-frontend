@@ -12,7 +12,7 @@ export default function Homepage() {
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
   const { i18n, t } = useTranslation();
 
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);

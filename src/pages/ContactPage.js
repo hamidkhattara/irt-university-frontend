@@ -12,7 +12,7 @@ const ContactPage = () => {
   });
 
   const [status, setStatus] = useState("");
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

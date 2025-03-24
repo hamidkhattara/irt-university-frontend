@@ -8,7 +8,7 @@ const AdminPosts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const location = useLocation();
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   useEffect(() => {
     const fetchPosts = async () => {

@@ -23,8 +23,7 @@ const RegisterPage = () => {
   });
 
   const { t } = useTranslation();
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
+  const baseURL = process.env.REACT_APP_API_URL || "link"
   const togglePassword = () => setShowPassword(!showPassword);
 
   const handleChange = (e) => {

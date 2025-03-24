@@ -9,7 +9,7 @@ const DeletePost = () => {
   const [post, setPost] = useState(null);
   const [message, setMessage] = useState('');
 
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const fetchPost = useCallback(async () => {
     try {

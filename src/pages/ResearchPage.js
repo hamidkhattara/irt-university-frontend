@@ -14,7 +14,7 @@ const ResearchPage = () => {
   const [expandedPosts, setExpandedPosts] = useState({});
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
 
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const baseURL = process.env.REACT_APP_API_URL || "link";
   const { t, i18n } = useTranslation();
 
   const getYouTubeVideoId = (url) => {
