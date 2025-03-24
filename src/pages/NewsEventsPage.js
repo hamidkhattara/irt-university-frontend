@@ -8,7 +8,6 @@ const NewsEventsPage = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
-  // State declarations
   const [newsList, setNewsList] = useState([]);
   const [eventsList, setEventsList] = useState([]);
   const [pressReleases, setPressReleases] = useState([]);
@@ -18,63 +17,15 @@ const NewsEventsPage = () => {
   const [visiblePress, setVisiblePress] = useState(3);
   const [visibleAnnounce, setVisibleAnnounce] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [modalData, setModalData] = useState({ 
-    image: null, 
-    title: "", 
-    content: "", 
-    video: "", 
-    pdfUrl: "", 
-    showPdf: false 
-  });
+  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
 
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // Core functions defined first
-  const handleLoadMore = (type) => {
-    switch (type) {
-      case "events":
-        setVisibleEvents(prev => prev + 3);
-        break;
-      case "news":
-        setVisibleNews(prev => prev + 3);
-        break;
-      case "press":
-        setVisiblePress(prev => prev + 3);
-        break;
-      case "announce":
-        setVisibleAnnounce(prev => prev + 3);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleShowLess = (type) => {
-    switch (type) {
-      case "events":
-        setVisibleEvents(3);
-        break;
-      case "news":
-        setVisibleNews(3);
-        break;
-      case "press":
-        setVisiblePress(3);
-        break;
-      case "announce":
-        setVisibleAnnounce(3);
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Helper functions
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);
     return match ? match[1] : null;
   };
 
-  // Data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -95,7 +46,6 @@ const NewsEventsPage = () => {
     fetchData();
   }, [baseURL]);
 
-  // Event handlers
   const handleImageClick = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description || "";
@@ -115,11 +65,6 @@ const NewsEventsPage = () => {
     setModalData((prev) => ({ ...prev, showPdf: true }));
   };
 
-  const toggleReadMore = (postId) => {
-    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
-  };
-
-  // Content formatting
   const formatContent = (text) => {
     if (!text) return "";
     return text
@@ -136,12 +81,17 @@ const NewsEventsPage = () => {
       .join("");
   };
 
-  // Component rendering functions
+  const toggleReadMore = (postId) => {
+    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
   const renderPostCard = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
+  
+    // Ensure content is defined before accessing its length
     const safeContent = content || "";
-
+  
     return (
       <div key={post._id} className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105">
         {post.video ? (
@@ -185,7 +135,6 @@ const NewsEventsPage = () => {
       </div>
     );
   };
-
   const renderSection = (titleKey, list, visibleCount, type, sectionId) => (
     <section id={sectionId} className="container mx-auto px-8 py-16">
       <h2 className="text-4xl font-bold text-blue-900 text-center">{t(titleKey)}</h2>
@@ -215,9 +164,24 @@ const NewsEventsPage = () => {
         </div>
       )}
     </section>
+    
   );
 
-  // Main component render
+// ⬇️ ADD THIS HERE
+const handleLoadMore = (type) => {
+  if (type === "news") setVisibleNews((prev) => prev + 3);
+  if (type === "events") setVisibleEvents((prev) => prev + 3);
+  if (type === "press") setVisiblePress((prev) => prev + 3);
+  if (type === "announce") setVisibleAnnounce((prev) => prev + 3);
+};
+
+const handleShowLess = (type) => {
+  if (type === "news") setVisibleNews(3);
+  if (type === "events") setVisibleEvents(3);
+  if (type === "press") setVisiblePress(3);
+  if (type === "announce") setVisibleAnnounce(3);
+};
+
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
@@ -225,13 +189,10 @@ const NewsEventsPage = () => {
         <h1 className="text-5xl font-extrabold">{t("newsEvents.title")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">{t("newsEvents.subtitle")}</p>
       </section>
-      
       {renderSection("newsEvents.events", eventsList, visibleEvents, "events", "upcoming-events")}
       {renderSection("newsEvents.webinars", newsList, visibleNews, "news", "webinars")}
       {renderSection("newsEvents.press", pressReleases, visiblePress, "press", "press-releases")}
       {renderSection("newsEvents.announcements", announcements, visibleAnnounce, "announce", "announcements")}
-      
-      {/* Modal */}
       {modalData.image && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
