@@ -60,24 +60,17 @@ export default function Homepage() {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content || "";
     
-    // Force HTTPS for PDF URLs
-    let pdfUrl = post.pdfUrl || "";
-    if (pdfUrl.startsWith("http://")) {
-      pdfUrl = pdfUrl.replace("http://", "https://");
-    }
-
     setModalData({
-      image: post.imageUrl || "https://via.placeholder.com/600x400?text=Post+Image",
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
       title,
       content,
       video: post.video || "",
-      pdfUrl,
+      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
       showPdf: false,
       pdfLoading: false,
       pdfError: null
     });
   };
-
   const handleOpenPdf = async (e) => {
     e.stopPropagation();
     
@@ -148,11 +141,11 @@ export default function Homepage() {
           />
         ) : (
           <img
-            src={post.imageUrl || "https://via.placeholder.com/600x400?text=Post+Image"}
-            alt={title}
-            className="w-full h-64 object-cover cursor-pointer"
-            onClick={() => handleImageClick(post)}
-          />
+          src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image"}
+          alt={title}
+          className="w-full h-64 object-cover cursor-pointer"
+          onClick={() => handleImageClick(post)}
+        />
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>

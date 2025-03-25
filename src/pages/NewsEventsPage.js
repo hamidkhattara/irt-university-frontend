@@ -49,13 +49,13 @@ const NewsEventsPage = () => {
   const handleImageClick = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description || "";
-
+  
     setModalData({
-      image: post.imageUrl || "https://via.placeholder.com/600x400?text=Post+Image",
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
       title,
       content,
       video: post.video || "",
-      pdfUrl: post.pdfUrl || "",
+      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
       showPdf: false,
     });
   };
@@ -105,11 +105,11 @@ const NewsEventsPage = () => {
         ) : (
           post.imageUrl && (
             <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
-              <img
-                src={post.imageUrl}
-                alt={title}
-                className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
-              />
+            <img
+           src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image"}
+           alt={title}
+           className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+            />
             </div>
           )
         )}

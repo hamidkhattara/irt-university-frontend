@@ -45,13 +45,13 @@ const ProgramsInitiativesPage = () => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? item.title_ar : item.title;
     const content = isArabic ? item.content_ar : item.content || "";
-
+  
     setModalData({
-      image: item.imageUrl || "https://via.placeholder.com/600x400?text=Program+Image",
+      image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image",
       title,
       content,
       video: item.video || "",
-      pdfUrl: item.pdfUrl || "",
+      pdfUrl: item.pdfId ? `${baseURL}/api/files/${item.pdfId}` : "",
       showPdf: false,
     });
   };
@@ -99,10 +99,10 @@ const ProgramsInitiativesPage = () => {
         ) : (
           <div onClick={() => handleImageClick(item)} className="cursor-pointer">
             <img
-              src={item.imageUrl || "https://via.placeholder.com/600x400?text=Program+Image"}
-              alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
-            />
+           src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image"}
+           alt={title}
+           className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+           />
           </div>
         )}
         <div className="p-6">

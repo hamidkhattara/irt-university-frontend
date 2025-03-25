@@ -44,13 +44,13 @@ const ResearchPage = () => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
-
+  
     setModalData({
-      image: post.imageUrl || "https://via.placeholder.com/600x400?text=Research+Image",
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image",
       title,
       content,
       video: post.video || "",
-      pdfUrl: post.pdfUrl || "",
+      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
       showPdf: false,
     });
   };
@@ -110,11 +110,11 @@ const ResearchPage = () => {
           </div>
         ) : (
           <div onClick={() => handleImageClick(post)} className="cursor-pointer">
-            <img
-              src={post.imageUrl || "https://via.placeholder.com/600x400?text=Research+Image"}
-              alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
-            />
+        <img
+         src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image"}
+         alt={title}
+         className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+          />
           </div>
         )}
         <div className="p-6">
