@@ -40,25 +40,38 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!postData.image && !postData.video) {
       setMessage('❌ Please provide either an image or a video.');
       return;
     }
-
+  
     try {
       const formData = new FormData();
+      
+      // Append all text fields
       formData.append('title', postData.title);
       formData.append('content', postData.content);
       formData.append('title_ar', postData.title_ar);
       formData.append('content_ar', postData.content_ar);
       formData.append('page', postData.page);
       formData.append('section', postData.section);
+      
+      // Append files only if they exist
       if (postData.image) formData.append('image', postData.image);
       if (postData.video) formData.append('video', postData.video);
       if (postData.pdf) formData.append('pdf', postData.pdf);
-
-      await axios.post(`${baseURL}/api/posts`, formData);
+  
+      // Add headers for file upload
+      const response = await axios.post(`${baseURL}/api/posts`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // If using auth
+        },
+        maxContentLength: 50 * 1024 * 1024, // 50MB max
+        maxBodyLength: 50 * 1024 * 1024 // 50MB max
+      });
+  
       setMessage('✅ Post created successfully!');
       setPostData({
         title: '',
@@ -71,12 +84,25 @@ const CreatePost = () => {
         video: '',
         pdf: null,
       });
+      
+      // Optional: Redirect or refresh data
+      // navigate('/posts') or fetchPosts();
+  
     } catch (error) {
-      console.error(error);
-      setMessage('❌ Error creating post');
+      console.error('Detailed error:', error);
+      const errorMessage = error.response?.data?.message 
+        || error.message 
+        || 'Failed to create post';
+      setMessage(`❌ ${errorMessage}`);
+      
+      // Specific error handling
+      if (error.response?.status === 413) {
+        setMessage('❌ File size too large (max 50MB)');
+      } else if (error.response?.status === 401) {
+        setMessage('❌ Unauthorized - Please login again');
+      }
     }
   };
-
   const formatContentWithLinks = (text) => {
     if (!text) return "";
     const urlRegex = /(https?:\/\/[^\s]+)/g;
