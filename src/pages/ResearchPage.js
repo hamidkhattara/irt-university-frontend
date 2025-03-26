@@ -13,8 +13,7 @@ const ResearchPage = () => {
   const [visibleCollaborations, setVisibleCollaborations] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
-
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
 
   const getYouTubeVideoId = (url) => {
@@ -22,29 +21,11 @@ const ResearchPage = () => {
     return match ? match[1] : null;
   };
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const [res1, res2, res3] = await Promise.all([
-          axios.get(`${baseURL}/api/posts?page=research&section=latest-publications`),
-          axios.get(`${baseURL}/api/posts?page=research&section=ongoing-projects`),
-          axios.get(`${baseURL}/api/posts?page=research&section=collaborations-partnerships`),
-        ]);
-        setPublications(res1.data);
-        setProjects(res2.data);
-        setCollaborations(res3.data);
-      } catch (err) {
-        console.error("Error fetching research posts", err);
-      }
-    };
-    fetchPosts();
-  }, [baseURL]);
-
   const handleImageClick = (post) => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
-  
+
     setModalData({
       image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image",
       title,
@@ -89,10 +70,26 @@ const ResearchPage = () => {
       .join("");
   };
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          axios.get(`${baseURL}/api/research/latest-publications`),
+          axios.get(`${baseURL}/api/research/ongoing-projects`),
+          axios.get(`${baseURL}/api/research/collaborations-partnerships`)
+        ]);
+        setPublications(res1.data);
+        setProjects(res2.data);
+        setCollaborations(res3.data);
+      } catch (err) {
+        console.error("Error fetching research posts", err);
+      }
+    };
+    fetchPosts();
+  }, [baseURL]);
+
   const renderPostCard = (post) => {
-    if (!post || !post.title || !post.createdAt) {
-      return null;
-    }
+    if (!post || !post.title || !post.createdAt) return null;
 
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
@@ -110,11 +107,11 @@ const ResearchPage = () => {
           </div>
         ) : (
           <div onClick={() => handleImageClick(post)} className="cursor-pointer">
-        <img
-         src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image"}
-         alt={title}
-         className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
-          />
+            <img
+              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image"}
+              alt={title}
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+            />
           </div>
         )}
         <div className="p-6">
@@ -158,31 +155,28 @@ const ResearchPage = () => {
 
   const loadLessHandler = (type) => {
     switch (type) {
-      case "publications":
-        setVisiblePublications(3);
-        break;
-      case "projects":
-        setVisibleProjects(3);
-        break;
-      case "collaborations":
-        setVisibleCollaborations(3);
-        break;
-      default:
-        break;
+      case "publications": setVisiblePublications(3); break;
+      case "projects": setVisibleProjects(3); break;
+      case "collaborations": setVisibleCollaborations(3); break;
+      default: break;
     }
   };
 
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
+
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("Research & Insights")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">
           {t("Exploring groundbreaking research, ongoing projects, and global collaborations.")}
         </p>
       </section>
+
       <section id="latest-research" className="container mx-auto px-6 py-16">
-        <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t("Latest Research Publications")}</h2>
+        <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">
+          {t("Latest Research Publications")}
+        </h2>
         {publications.length === 0 ? (
           <p className="text-center text-gray-500">{t("No available publications for now.")}</p>
         ) : (
@@ -213,6 +207,7 @@ const ResearchPage = () => {
           </>
         )}
       </section>
+
       <section id="ongoing-projects" className="container mx-auto px-6 py-16">
         <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t("Ongoing Projects")}</h2>
         {projects.length === 0 ? (
@@ -245,8 +240,11 @@ const ResearchPage = () => {
           </>
         )}
       </section>
+
       <section id="collaborations" className="container mx-auto px-6 py-16">
-        <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t("Collaborations and Partnerships")}</h2>
+        <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">
+          {t("Collaborations and Partnerships")}
+        </h2>
         {collaborations.length === 0 ? (
           <p className="text-center text-gray-500">{t("No available collaborations for now.")}</p>
         ) : (
@@ -277,6 +275,7 @@ const ResearchPage = () => {
           </>
         )}
       </section>
+
       {modalData.image && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
@@ -329,6 +328,7 @@ const ResearchPage = () => {
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );

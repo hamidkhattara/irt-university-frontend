@@ -8,7 +8,7 @@ const AdminPosts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const location = useLocation();
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -82,9 +82,9 @@ const AdminPosts = () => {
                   <tr key={post._id} className="text-center">
                     <td className="px-4 py-2 border">{post.title}</td>
                     <td className="px-4 py-2 border">
-                      {post.image ? (
+                      {post.imageId ? (
                         <img
-                          src={`${baseURL}/uploads/${post.image}`}
+                          src={`${baseURL}/api/files/${post.imageId}`}
                           alt={post.title}
                           className="h-14 w-14 object-cover mx-auto rounded"
                         />
@@ -102,9 +102,9 @@ const AdminPosts = () => {
                       )}
                     </td>
                     <td className="px-4 py-2 border">
-                      {post.pdf ? (
+                      {post.pdfId ? (
                         <a
-                          href={`${baseURL}/uploads/${post.pdf}`}
+                          href={`${baseURL}/api/files/${post.pdfId}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"

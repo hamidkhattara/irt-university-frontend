@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 const NewsEventsPage = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const [newsList, setNewsList] = useState([]);
   const [eventsList, setEventsList] = useState([]);
@@ -19,8 +20,6 @@ const NewsEventsPage = () => {
   const [expandedPosts, setExpandedPosts] = useState({});
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
 
-  const baseURL = process.env.REACT_APP_API_URL || "link";
-
   const getYouTubeVideoId = (url) => {
     const match = url.match(/[?&]v=([^&]+)/);
     return match ? match[1] : null;
@@ -30,10 +29,10 @@ const NewsEventsPage = () => {
     const fetchData = async () => {
       try {
         const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
-          axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
-          axios.get(`${baseURL}/api/posts?page=news&section=events`),
-          axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
-          axios.get(`${baseURL}/api/posts?page=news&section=announcements`),
+          axios.get(`${baseURL}/api/news-events/webinars-workshops`),
+          axios.get(`${baseURL}/api/news-events/events`),
+          axios.get(`${baseURL}/api/news-events/press-releases`),
+          axios.get(`${baseURL}/api/news-events/announcements`)
         ]);
         setNewsList(newsRes.data);
         setEventsList(eventsRes.data);
@@ -46,10 +45,30 @@ const NewsEventsPage = () => {
     fetchData();
   }, [baseURL]);
 
+  const handleLoadMore = (type) => {
+    switch (type) {
+      case "news": setVisibleNews((prev) => prev + 3); break;
+      case "events": setVisibleEvents((prev) => prev + 3); break;
+      case "press": setVisiblePress((prev) => prev + 3); break;
+      case "announce": setVisibleAnnounce((prev) => prev + 3); break;
+      default: break;
+    }
+  };
+
+  const handleShowLess = (type) => {
+    switch (type) {
+      case "news": setVisibleNews(3); break;
+      case "events": setVisibleEvents(3); break;
+      case "press": setVisiblePress(3); break;
+      case "announce": setVisibleAnnounce(3); break;
+      default: break;
+    }
+  };
+
   const handleImageClick = (post) => {
     const title = isArabic ? post.title_ar : post.title;
-    const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description || "";
-  
+    const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
+
     setModalData({
       image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
       title,
@@ -88,8 +107,6 @@ const NewsEventsPage = () => {
   const renderPostCard = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
-  
-    // Ensure content is defined before accessing its length
     const safeContent = content || "";
   
     return (
@@ -103,13 +120,13 @@ const NewsEventsPage = () => {
             />
           </div>
         ) : (
-          post.imageUrl && (
+          post.imageId && (
             <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
-            <img
-           src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image"}
-           alt={title}
-           className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
-            />
+              <img
+                src={`${baseURL}/api/files/${post.imageId}`}
+                alt={title}
+                className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+              />
             </div>
           )
         )}
@@ -135,6 +152,7 @@ const NewsEventsPage = () => {
       </div>
     );
   };
+
   const renderSection = (titleKey, list, visibleCount, type, sectionId) => (
     <section id={sectionId} className="container mx-auto px-8 py-16">
       <h2 className="text-4xl font-bold text-blue-900 text-center">{t(titleKey)}</h2>
@@ -164,35 +182,22 @@ const NewsEventsPage = () => {
         </div>
       )}
     </section>
-    
   );
-
-// ⬇️ ADD THIS HERE
-const handleLoadMore = (type) => {
-  if (type === "news") setVisibleNews((prev) => prev + 3);
-  if (type === "events") setVisibleEvents((prev) => prev + 3);
-  if (type === "press") setVisiblePress((prev) => prev + 3);
-  if (type === "announce") setVisibleAnnounce((prev) => prev + 3);
-};
-
-const handleShowLess = (type) => {
-  if (type === "news") setVisibleNews(3);
-  if (type === "events") setVisibleEvents(3);
-  if (type === "press") setVisiblePress(3);
-  if (type === "announce") setVisibleAnnounce(3);
-};
 
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
+
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("newsEvents.title")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">{t("newsEvents.subtitle")}</p>
       </section>
+
       {renderSection("newsEvents.events", eventsList, visibleEvents, "events", "upcoming-events")}
       {renderSection("newsEvents.webinars", newsList, visibleNews, "news", "webinars")}
       {renderSection("newsEvents.press", pressReleases, visiblePress, "press", "press-releases")}
       {renderSection("newsEvents.announcements", announcements, visibleAnnounce, "announce", "announcements")}
+
       {modalData.image && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
@@ -245,6 +250,7 @@ const handleShowLess = (type) => {
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );

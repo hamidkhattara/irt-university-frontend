@@ -8,14 +8,12 @@ const ProgramsInitiativesPage = () => {
   const [innovationLabs, setInnovationLabs] = useState([]);
   const [incubationPrograms, setIncubationPrograms] = useState([]);
   const [fundingOpportunities, setFundingOpportunities] = useState([]);
-
   const [labsVisible, setLabsVisible] = useState(3);
   const [incubVisible, setIncubVisible] = useState(3);
   const [fundingVisible, setFundingVisible] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
-
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
 
   const getYouTubeVideoId = (url) => {
@@ -27,9 +25,9 @@ const ProgramsInitiativesPage = () => {
     const fetchData = async () => {
       try {
         const [labsRes, incubRes, fundingRes] = await Promise.all([
-          axios.get(`${baseURL}/api/posts?page=programs&section=innovation-labs`),
-          axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
-          axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`),
+          axios.get(`${baseURL}/api/programs/innovation-labs`),
+          axios.get(`${baseURL}/api/programs/incubation-programs`),
+          axios.get(`${baseURL}/api/programs/funding-opportunities`)
         ]);
         setInnovationLabs(labsRes.data);
         setIncubationPrograms(incubRes.data);
@@ -41,11 +39,20 @@ const ProgramsInitiativesPage = () => {
     fetchData();
   }, [baseURL]);
 
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(i18n.language === "ar" ? "ar-DZ" : undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const handleImageClick = (item) => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? item.title_ar : item.title;
-    const content = isArabic ? item.content_ar : item.content || "";
-  
+    const content = isArabic ? item.content_ar : item.content;
+
     setModalData({
       image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image",
       title,
@@ -84,8 +91,9 @@ const ProgramsInitiativesPage = () => {
   const renderCard = (item) => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? item.title_ar : item.title;
-    const content = isArabic ? item.content_ar : item.content || "";
-
+    const content = isArabic ? item.content_ar : item.content;
+    const safeContent = content || "";
+  
     return (
       <div key={item._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
         {item.video ? (
@@ -99,23 +107,23 @@ const ProgramsInitiativesPage = () => {
         ) : (
           <div onClick={() => handleImageClick(item)} className="cursor-pointer">
             <img
-           src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image"}
-           alt={title}
-           className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
-           />
+              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image"}
+              alt={title}
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+            />
           </div>
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
-          <p className="text-sm text-gray-500 mb-2">{new Date(item.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm text-gray-500 mb-2">{formatDate(item.createdAt)}</p>
           <div className="text-gray-700 text-base">
-            {expandedPosts[item._id] || content.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
+            {expandedPosts[item._id] || safeContent.length <= 100 ? (
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent) }} />
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content.substring(0, 100)) + "..." }} />
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100)) + "..." }} />
             )}
           </div>
-          {content.length > 100 && (
+          {safeContent.length > 100 && (
             <button
               onClick={() => toggleReadMore(item._id)}
               className="text-blue-700 hover:underline text-sm font-medium"
@@ -164,12 +172,14 @@ const ProgramsInitiativesPage = () => {
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
+
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("Programs & Initiatives")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">
           {t("Empowering students and communities through dynamic programs and strategic initiatives.")}
         </p>
       </section>
+
       {renderSection(
         "Innovation Labs",
         innovationLabs,
@@ -178,6 +188,7 @@ const ProgramsInitiativesPage = () => {
         "No Innovation Labs available at the moment.",
         "innovation-labs"
       )}
+
       <div className="bg-gray-100 w-full">
         {renderSection(
           "Technology Incubation Programs",
@@ -188,6 +199,7 @@ const ProgramsInitiativesPage = () => {
           "technology-incubation"
         )}
       </div>
+
       {renderSection(
         "Research Funding Opportunities",
         fundingOpportunities,
@@ -196,6 +208,7 @@ const ProgramsInitiativesPage = () => {
         "No Research Funding Opportunities available at the moment.",
         "research-funding"
       )}
+
       {modalData.image && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
@@ -248,6 +261,7 @@ const ProgramsInitiativesPage = () => {
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );

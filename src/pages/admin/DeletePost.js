@@ -6,10 +6,9 @@ import Navbar from '../../components/Navbar/Navbar';
 const DeletePost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [post, setPost] = useState(null);
   const [message, setMessage] = useState('');
-
-  const baseURL = process.env.REACT_APP_API_URL || "link";
 
   const fetchPost = useCallback(async () => {
     try {
@@ -45,19 +44,20 @@ const DeletePost = () => {
       <Navbar />
       <div className="p-6 max-w-3xl mx-auto bg-white shadow-lg rounded-xl">
         <h2 className="text-2xl font-bold mb-4">Delete Post</h2>
-        {message && <p className="mb-3 text-sm text-red-600">{message}</p>}
+
+        {message && <p className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
+
         {post ? (
           <div>
             <h3 className="text-xl font-semibold">{post.title}</h3>
             <p className="text-gray-700 mb-4">{post.content}</p>
-            {post.image && (
+            {post.imageId ? (
               <img
-                src={`${baseURL}/uploads/${post.image}`}
+                src={`${baseURL}/api/files/${post.imageId}`}
                 alt="Post"
                 className="w-40 h-40 object-cover rounded-md mb-4"
               />
-            )}
-            {post.video && (
+            ) : post.video ? (
               <a
                 href={post.video}
                 target="_blank"
@@ -66,10 +66,10 @@ const DeletePost = () => {
               >
                 View Video
               </a>
-            )}
-            {post.pdf && (
+            ) : null}
+            {post.pdfId && (
               <a
-                href={`${baseURL}/uploads/${post.pdf}`}
+                href={`${baseURL}/api/files/${post.pdfId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
@@ -77,6 +77,7 @@ const DeletePost = () => {
                 View PDF
               </a>
             )}
+
             <button
               onClick={handleDelete}
               className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition"

@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 const EditPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const [form, setForm] = useState({
     title: '',
@@ -36,8 +36,8 @@ const EditPost = () => {
         section: res.data.section || '',
         video: res.data.video || '',
       });
-      setExistingImage(res.data.image || '');
-      setExistingPdf(res.data.pdf || '');
+      setExistingImage(res.data.imageId || '');
+      setExistingPdf(res.data.pdfId || '');
     } catch (err) {
       console.error('Error fetching post:', err);
       setMessage('❌ Failed to fetch post data.');
@@ -110,10 +110,9 @@ const EditPost = () => {
       <div className="p-6 max-w-3xl mx-auto bg-white shadow-lg rounded-xl">
         <h2 className="text-2xl font-bold mb-4">Edit Post</h2>
 
-        {message && <p className="mb-3 text-sm text-green-600">{message}</p>}
+        {message && <p className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* English Title */}
           <div>
             <label className="block mb-1 font-medium">Title (English)</label>
             <input
@@ -126,7 +125,6 @@ const EditPost = () => {
             />
           </div>
 
-          {/* Arabic Title */}
           <div>
             <label className="block mb-1 font-medium">Title (Arabic)</label>
             <input
@@ -139,7 +137,6 @@ const EditPost = () => {
             />
           </div>
 
-          {/* English Content */}
           <div>
             <label className="block mb-1 font-medium">Content (English)</label>
             <textarea
@@ -152,7 +149,6 @@ const EditPost = () => {
             ></textarea>
           </div>
 
-          {/* Arabic Content */}
           <div>
             <label className="block mb-1 font-medium">Content (Arabic)</label>
             <textarea
@@ -165,7 +161,6 @@ const EditPost = () => {
             ></textarea>
           </div>
 
-          {/* PAGE Dropdown */}
           <div>
             <label className="block mb-1 font-medium">Page</label>
             <select
@@ -182,7 +177,6 @@ const EditPost = () => {
             </select>
           </div>
 
-          {/* SECTION Dropdown based on selected page */}
           {form.page === 'research' && (
             <div>
               <label className="block mb-1 font-medium">Section</label>
@@ -238,12 +232,11 @@ const EditPost = () => {
             </div>
           )}
 
-          {/* Current Image */}
           <div>
             <label className="block mb-1 font-medium">Current Image</label>
             {existingImage ? (
               <img
-                src={`${baseURL}/uploads/${existingImage}`}
+                src={`${baseURL}/api/files/${existingImage}`}
                 alt="Current"
                 className="w-40 h-40 object-cover rounded-md mb-2"
               />
@@ -252,7 +245,6 @@ const EditPost = () => {
             )}
           </div>
 
-          {/* Change Image */}
           <div>
             <label className="block mb-1 font-medium">Change Image (optional)</label>
             <input
@@ -263,7 +255,6 @@ const EditPost = () => {
             />
           </div>
 
-          {/* Video Link */}
           <div>
             <label className="block mb-1 font-medium">YouTube Video Link (optional)</label>
             <input
@@ -276,12 +267,11 @@ const EditPost = () => {
             />
           </div>
 
-          {/* Current PDF */}
           <div>
             <label className="block mb-1 font-medium">Current PDF</label>
             {existingPdf ? (
               <a
-                href={`${baseURL}/uploads/${existingPdf}`}
+                href={`${baseURL}/api/files/${existingPdf}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
@@ -293,7 +283,6 @@ const EditPost = () => {
             )}
           </div>
 
-          {/* Change PDF */}
           <div>
             <label className="block mb-1 font-medium">Change PDF (optional)</label>
             <input

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const CreatePost = () => {
   const [postData, setPostData] = useState({
@@ -16,7 +17,8 @@ const CreatePost = () => {
   });
 
   const [message, setMessage] = useState('');
-  const baseURL = process.env.REACT_APP_API_URL || "link";
+  const navigate = useNavigate();
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const handleImageChange = (e) => {
     if (postData.video) {
@@ -40,69 +42,38 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!postData.image && !postData.video) {
       setMessage('❌ Please provide either an image or a video.');
       return;
     }
-  
+
     try {
       const formData = new FormData();
-      
-      // Append all text fields
       formData.append('title', postData.title);
       formData.append('content', postData.content);
       formData.append('title_ar', postData.title_ar);
       formData.append('content_ar', postData.content_ar);
       formData.append('page', postData.page);
       formData.append('section', postData.section);
-      
-      // Append files only if they exist
       if (postData.image) formData.append('image', postData.image);
       if (postData.video) formData.append('video', postData.video);
       if (postData.pdf) formData.append('pdf', postData.pdf);
-  
-      // Add headers for file upload
-      const response = await axios.post(`${baseURL}/api/posts`, formData, {
+
+      await axios.post(`${baseURL}/api/posts`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // If using auth
-        },
-        maxContentLength: 50 * 1024 * 1024, // 50MB max
-        maxBodyLength: 50 * 1024 * 1024 // 50MB max
-      });
-  
-      setMessage('✅ Post created successfully!');
-      setPostData({
-        title: '',
-        content: '',
-        title_ar: '',
-        content_ar: '',
-        page: '',
-        section: '',
-        image: null,
-        video: '',
-        pdf: null,
+          'Content-Type': 'multipart/form-data'
+        }
       });
       
-      // Optional: Redirect or refresh data
-      // navigate('/posts') or fetchPosts();
-  
+      setMessage('✅ Post created successfully! Redirecting...');
+      setTimeout(() => navigate('/admin/posts'), 2000);
     } catch (error) {
-      console.error('Detailed error:', error);
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || 'Failed to create post';
-      setMessage(`❌ ${errorMessage}`);
-      
-      // Specific error handling
-      if (error.response?.status === 413) {
-        setMessage('❌ File size too large (max 50MB)');
-      } else if (error.response?.status === 401) {
-        setMessage('❌ Unauthorized - Please login again');
-      }
+      console.error(error);
+      setMessage('❌ Error creating post');
     }
   };
+
   const formatContentWithLinks = (text) => {
     if (!text) return "";
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -114,7 +85,9 @@ const CreatePost = () => {
       <Navbar />
       <div className="max-w-2xl mx-auto p-4 bg-white shadow-lg rounded-xl">
         <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
-        {message && <div className="mb-3 text-sm text-green-600">{message}</div>}
+
+        {message && <div className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>{message}</div>}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -124,6 +97,7 @@ const CreatePost = () => {
             onChange={(e) => setPostData({ ...postData, title: e.target.value })}
             required
           />
+
           <input
             type="text"
             placeholder="Title (Arabic)"
@@ -132,6 +106,7 @@ const CreatePost = () => {
             onChange={(e) => setPostData({ ...postData, title_ar: e.target.value })}
             required
           />
+
           <textarea
             placeholder="Content (English)"
             className="w-full border p-2 rounded"
@@ -140,6 +115,7 @@ const CreatePost = () => {
             onChange={(e) => setPostData({ ...postData, content: e.target.value })}
             required
           />
+
           <textarea
             placeholder="Content (Arabic)"
             className="w-full border p-2 rounded text-right"
@@ -148,6 +124,7 @@ const CreatePost = () => {
             onChange={(e) => setPostData({ ...postData, content_ar: e.target.value })}
             required
           />
+
           <select
             className="w-full border p-2 rounded"
             value={postData.page}
@@ -159,6 +136,7 @@ const CreatePost = () => {
             <option value="programs">Programs & Initiatives</option>
             <option value="news">News & Events</option>
           </select>
+
           {postData.page === 'research' && (
             <select
               className="w-full border p-2 rounded"
@@ -172,6 +150,7 @@ const CreatePost = () => {
               <option value="collaborations-partnerships">Collaborations & Partnerships</option>
             </select>
           )}
+
           {postData.page === 'programs' && (
             <select
               className="w-full border p-2 rounded"
@@ -185,6 +164,7 @@ const CreatePost = () => {
               <option value="funding-opportunities">Research Funding Opportunities</option>
             </select>
           )}
+
           {postData.page === 'news' && (
             <select
               className="w-full border p-2 rounded"
@@ -199,6 +179,7 @@ const CreatePost = () => {
               <option value="events">Upcoming and Past Events</option>
             </select>
           )}
+
           <input
             type="file"
             accept="image/*"
@@ -206,6 +187,7 @@ const CreatePost = () => {
             onChange={handleImageChange}
             disabled={!!postData.video}
           />
+
           <input
             type="text"
             placeholder="YouTube Video Link"
@@ -214,12 +196,14 @@ const CreatePost = () => {
             onChange={handleVideoChange}
             disabled={!!postData.image}
           />
+
           <input
             type="file"
             accept="application/pdf"
             className="w-full border p-2 rounded"
             onChange={handlePdfChange}
           />
+
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -227,6 +211,7 @@ const CreatePost = () => {
             Submit Post
           </button>
         </form>
+
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Preview</h3>
           <div className="space-y-4">
@@ -237,6 +222,7 @@ const CreatePost = () => {
                 dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content) }}
               />
             </div>
+
             <div>
               <h4 className="font-semibold">Arabic Content Preview:</h4>
               <div
