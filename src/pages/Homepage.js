@@ -114,12 +114,14 @@ export default function Homepage() {
           />
         ) : (
           <img
-         src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://placehold.co/600x400?text=Image+Not+Available"}
-         alt={title}
-         className="w-full h-64 object-cover cursor-pointer"
-         onClick={() => handleImageClick(post)}
-         onError={(e) => (e.target.src = "https://placehold.co/600x400?text=Image+Not+Available")}
-/>
+          src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
+          alt={title}
+          className="w-full h-64 object-cover cursor-pointer"
+          onError={(e) => {
+            e.target.src = placeholderImage;
+            e.target.onerror = null;
+          }}
+        />
 
         )}
         <div className="p-6">
@@ -219,7 +221,7 @@ export default function Homepage() {
                 <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
               </div>
             </div>
-            {modalData.pdfUrl ? (
+            {modalData.pdfUrl && (
   <div className="mt-4 text-center">
     <button
       onClick={(e) => handleOpenPdf(e)}
@@ -230,18 +232,23 @@ export default function Homepage() {
     {modalData.showPdf && (
       <div className="mt-4">
         <iframe
-          src={modalData.pdfUrl}
-          className="w-full h-[600px] rounded-lg"
+          src={`${modalData.pdfUrl}#view=fitH`}
+          className="w-full h-[600px] rounded-lg border"
           title="PDF Viewer"
           onError={(e) => {
-            e.target.outerHTML = `<p class="text-red-500">${t("PDF failed to load.")}</p>`;
+            e.target.outerHTML = `
+              <div class="text-red-500 p-4">
+                PDF failed to load. 
+                <a href="${modalData.pdfUrl}" target="_blank" 
+                   class="text-blue-600 underline ml-2">
+                  Download instead
+                </a>
+              </div>`;
           }}
         />
       </div>
     )}
   </div>
-) : (
-  <p className="text-red-500 text-center mt-4">{t("PDF not available.")}</p>
 )}
 
           </div>
