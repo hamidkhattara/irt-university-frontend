@@ -51,6 +51,20 @@ export default function Homepage() {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content;
+  
+    const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Image+Not+Available";
+    const pdfUrl = post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null;
+  
+    setModalData({
+      image: imageUrl,
+      title,
+      content,
+      video: post.video || "",
+      pdfUrl,
+      showPdf: false,
+    });
+  
+  
 
     setModalData({
       image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
@@ -100,11 +114,13 @@ export default function Homepage() {
           />
         ) : (
           <img
-            src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://placehold.co/600x400?text=Post+Image"}
-            alt={title}
-            className="w-full h-64 object-cover cursor-pointer"
-            onClick={() => handleImageClick(post)}
-          />
+         src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://placehold.co/600x400?text=Image+Not+Available"}
+         alt={title}
+         className="w-full h-64 object-cover cursor-pointer"
+         onClick={() => handleImageClick(post)}
+         onError={(e) => (e.target.src = "https://placehold.co/600x400?text=Image+Not+Available")}
+/>
+
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
@@ -203,25 +219,31 @@ export default function Homepage() {
                 <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
               </div>
             </div>
-            {modalData.pdfUrl && (
-              <div className="mt-4 text-center">
-                <button
-                  onClick={(e) => handleOpenPdf(e)}
-                  className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
-                >
-                  {t("Open PDF")}
-                </button>
-                {modalData.showPdf && (
-                  <div className="mt-4">
-                    <iframe
-                      src={modalData.pdfUrl}
-                      className="w-full h-[600px] rounded-lg"
-                      title="PDF Viewer"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+            {modalData.pdfUrl ? (
+  <div className="mt-4 text-center">
+    <button
+      onClick={(e) => handleOpenPdf(e)}
+      className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+    >
+      {t("Open PDF")}
+    </button>
+    {modalData.showPdf && (
+      <div className="mt-4">
+        <iframe
+          src={modalData.pdfUrl}
+          className="w-full h-[600px] rounded-lg"
+          title="PDF Viewer"
+          onError={(e) => {
+            e.target.outerHTML = `<p class="text-red-500">${t("PDF failed to load.")}</p>`;
+          }}
+        />
+      </div>
+    )}
+  </div>
+) : (
+  <p className="text-red-500 text-center mt-4">{t("PDF not available.")}</p>
+)}
+
           </div>
         </div>
       )}
