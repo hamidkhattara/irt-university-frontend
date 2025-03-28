@@ -100,7 +100,7 @@ export default function Homepage() {
           />
         ) : (
           <img
-            src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image"}
+            src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://placehold.co/600x400?text=Post+Image"}
             alt={title}
             className="w-full h-64 object-cover cursor-pointer"
             onClick={() => handleImageClick(post)}
