@@ -5,16 +5,26 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import Footer from "../components/Footer";
 
+const placeholderImage = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+
 export default function Homepage() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [expandedPosts, setExpandedPosts] = useState({});
   const [visiblePosts, setVisiblePosts] = useState(3);
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({ 
+    image: null, 
+    title: "", 
+    content: "", 
+    video: "", 
+    pdfUrl: "", 
+    showPdf: false 
+  });
   const { i18n, t } = useTranslation();
 
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const getYouTubeVideoId = (url) => {
+    if (!url) return null;
     const match = url.match(/[?&]v=([^&]+)/);
     return match ? match[1] : null;
   };
@@ -51,27 +61,15 @@ export default function Homepage() {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content;
-  
-    const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Image+Not+Available";
+    const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage;
     const pdfUrl = post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null;
-  
+
     setModalData({
       image: imageUrl,
       title,
       content,
       video: post.video || "",
       pdfUrl,
-      showPdf: false,
-    });
-  
-  
-
-    setModalData({
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
-      title,
-      content,
-      video: post.video || "",
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
       showPdf: false,
     });
   };
@@ -83,7 +81,6 @@ export default function Homepage() {
 
   const formatContent = (text) => {
     if (!text) return "";
-
     return text
       .split("\n")
       .map((line, index) => {
@@ -114,15 +111,15 @@ export default function Homepage() {
           />
         ) : (
           <img
-          src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
-          alt={title}
-          className="w-full h-64 object-cover cursor-pointer"
-          onError={(e) => {
-            e.target.src = placeholderImage;
-            e.target.onerror = null;
-          }}
-        />
-
+            src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
+            alt={title}
+            className="w-full h-64 object-cover cursor-pointer"
+            onError={(e) => {
+              e.target.src = placeholderImage;
+              e.target.onerror = null;
+            }}
+            onClick={() => handleImageClick(post)}
+          />
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
@@ -212,6 +209,10 @@ export default function Homepage() {
                   src={modalData.image}
                   alt="Enlarged"
                   className="max-w-full max-h-[80vh] rounded-lg mb-4"
+                  onError={(e) => {
+                    e.target.src = placeholderImage;
+                    e.target.onerror = null;
+                  }}
                 />
               </div>
             )}
@@ -222,35 +223,34 @@ export default function Homepage() {
               </div>
             </div>
             {modalData.pdfUrl && (
-  <div className="mt-4 text-center">
-    <button
-      onClick={(e) => handleOpenPdf(e)}
-      className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
-    >
-      {t("Open PDF")}
-    </button>
-    {modalData.showPdf && (
-      <div className="mt-4">
-        <iframe
-          src={`${modalData.pdfUrl}#view=fitH`}
-          className="w-full h-[600px] rounded-lg border"
-          title="PDF Viewer"
-          onError={(e) => {
-            e.target.outerHTML = `
-              <div class="text-red-500 p-4">
-                PDF failed to load. 
-                <a href="${modalData.pdfUrl}" target="_blank" 
-                   class="text-blue-600 underline ml-2">
-                  Download instead
-                </a>
-              </div>`;
-          }}
-        />
-      </div>
-    )}
-  </div>
-)}
-
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleOpenPdf}
+                  className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+                >
+                  {t("Open PDF")}
+                </button>
+                {modalData.showPdf && (
+                  <div className="mt-4">
+                    <iframe
+                      src={`${modalData.pdfUrl}#view=fitH`}
+                      className="w-full h-[600px] rounded-lg border"
+                      title="PDF Viewer"
+                      onError={(e) => {
+                        e.target.outerHTML = `
+                          <div class="text-red-500 p-4">
+                            PDF failed to load. 
+                            <a href="${modalData.pdfUrl}" target="_blank" 
+                               class="text-blue-600 underline ml-2">
+                              Download instead
+                            </a>
+                          </div>`;
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

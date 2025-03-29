@@ -17,6 +17,7 @@ const CreatePost = () => {
   });
 
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -26,6 +27,7 @@ const CreatePost = () => {
       return;
     }
     setPostData({ ...postData, image: e.target.files[0], video: '' });
+    setMessage('');
   };
 
   const handleVideoChange = (e) => {
@@ -34,6 +36,7 @@ const CreatePost = () => {
       return;
     }
     setPostData({ ...postData, video: e.target.value, image: null });
+    setMessage('');
   };
 
   const handlePdfChange = (e) => {
@@ -42,9 +45,12 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setMessage('');
 
     if (!postData.image && !postData.video) {
       setMessage('❌ Please provide either an image or a video.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -60,17 +66,23 @@ const CreatePost = () => {
       if (postData.video) formData.append('video', postData.video);
       if (postData.pdf) formData.append('pdf', postData.pdf);
 
-      await axios.post(`${baseURL}/api/posts`, formData, {
+      const response = await axios.post(`${baseURL}/api/posts`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
       
-      setMessage('✅ Post created successfully! Redirecting...');
-      setTimeout(() => navigate('/admin/posts'), 2000);
+      if (response.data && response.data.post) {
+        setMessage('✅ Post created successfully! Redirecting...');
+        setTimeout(() => navigate('/admin/posts'), 2000);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
-      console.error(error);
-      setMessage('❌ Error creating post');
+      console.error('Error:', error.response?.data || error.message);
+      setMessage(`❌ Error creating post: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +98,11 @@ const CreatePost = () => {
       <div className="max-w-2xl mx-auto p-4 bg-white shadow-lg rounded-xl">
         <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
 
-        {message && <div className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>{message}</div>}
+        {message && (
+          <div className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
+            {message}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -207,8 +223,9 @@ const CreatePost = () => {
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            disabled={isSubmitting}
           >
-            Submit Post
+            {isSubmitting ? 'Creating...' : 'Submit Post'}
           </button>
         </form>
 
