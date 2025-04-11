@@ -249,15 +249,16 @@ const ProgramsInitiativesPage = () => {
                 </button>
                 {modalData.showPdf && (
                   <div className="mt-4">
-                    <iframe
-  src={`https://irt-university-backend.onrender.com/api/files/${pdfId}?type=pdf`}
+ <iframe
+  src={`https://irt-university-backend.onrender.com/api/files/${post.pdfId}`}
   className="w-full h-[600px] rounded-lg border"
   title="PDF Viewer"
+  allow="fullscreen"
   onError={(e) => {
     e.target.outerHTML = `
       <div class="text-red-500 p-4">
         PDF failed to load. 
-        <a href="https://irt-university-backend.onrender.com/api/files/${pdfId}" 
+        <a href="https://irt-university-backend.onrender.com/api/files/${post.pdfId}" 
            target="_blank" 
            class="text-blue-600 underline ml-2">
           Download instead
@@ -265,7 +266,7 @@ const ProgramsInitiativesPage = () => {
       </div>`;
   }}
 />
-                  </div>
+             </div>
                 )}
               </div>
             )}
