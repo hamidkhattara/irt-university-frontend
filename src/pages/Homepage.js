@@ -233,7 +233,7 @@ export default function Homepage() {
                 {modalData.showPdf && (
                   <div className="mt-4">
                     <iframe
-                      src={`${modalData.pdfUrl}#view=fitH`}
+                      src={`https://irt-university-backend.onrender.com/api/files/${pdfId}?type=pdf`}
                       className="w-full h-[600px] rounded-lg border"
                       title="PDF Viewer"
                       onError={(e) => {
