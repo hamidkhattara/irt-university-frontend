@@ -32,7 +32,8 @@ const ResearchPage = () => {
       content,
       video: post.video || "",
       pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-      showPdf: false,
+      pdfId: post.pdfId || "", // Add this line
+      showPdf: false
     });
   };
 
@@ -317,11 +318,20 @@ const ResearchPage = () => {
                 {modalData.showPdf && (
                   <div className="mt-4">
 <iframe
-  src={`https://irt-university-backend.onrender.com/api/files/${pdfId}`}
-  style={{ width: '100%', height: '600px', border: 'none' }}
+  src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+  style={{ 
+    width: '100%', 
+    height: '600px', 
+    border: 'none',
+    backgroundColor: '#f5f5f5' // Visual loading state
+  }}
   title="PDF Viewer"
   allow="fullscreen"
   sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+  onError={(e) => {
+    console.error('PDF load error:', e);
+    window.open(`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`, '_blank');
+  }}
 />
                   </div>
                 )}
