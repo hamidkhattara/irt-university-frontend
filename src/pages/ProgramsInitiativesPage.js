@@ -254,6 +254,7 @@ const ProgramsInitiativesPage = () => {
   style={{ width: '100%', height: '600px', border: 'none' }}
   title="PDF Viewer"
   allow="fullscreen"
+  allowFullScreen
 />
              </div>
                 )}
