@@ -232,12 +232,12 @@ export default function Homepage() {
                 </button>
                 {modalData.showPdf && (
                   <div className="mt-4">
-  <iframe
+<iframe
   src={`https://irt-university-backend.onrender.com/api/files/${pdfId}`}
   style={{ width: '100%', height: '600px', border: 'none' }}
   title="PDF Viewer"
   allow="fullscreen"
-  allowFullScreen
+  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
 />
                   </div>
                 )}
