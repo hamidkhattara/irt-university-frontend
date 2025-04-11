@@ -317,10 +317,21 @@ const ResearchPage = () => {
                 {modalData.showPdf && (
                   <div className="mt-4">
                     <iframe
-                      src={modalData.pdfUrl}
-                      className="w-full h-[600px] rounded-lg"
-                      title="PDF Viewer"
-                    />
+  src={`https://irt-university-backend.onrender.com/api/files/${pdfId}?type=pdf`}
+  className="w-full h-[600px] rounded-lg border"
+  title="PDF Viewer"
+  onError={(e) => {
+    e.target.outerHTML = `
+      <div class="text-red-500 p-4">
+        PDF failed to load. 
+        <a href="https://irt-university-backend.onrender.com/api/files/${pdfId}" 
+           target="_blank" 
+           class="text-blue-600 underline ml-2">
+          Download instead
+        </a>
+      </div>`;
+  }}
+/>
                   </div>
                 )}
               </div>
