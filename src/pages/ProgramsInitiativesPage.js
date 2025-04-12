@@ -250,12 +250,23 @@ const ProgramsInitiativesPage = () => {
                 </button>
                 {modalData.showPdf && (
                   <div className="mt-4">
-<embed src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`} 
-type="application/pdf"
- width="100%" 
- height="100vh"
-  />
-
+    <iframe 
+      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
+      width="100%"
+      height="100%"
+      style={{ border: 'none' }}
+      title="PDF Viewer"
+    />
+    <p className="text-center mt-2">
+      <a 
+        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline"
+      >
+        Open PDF in new tab
+      </a>
+    </p>
 
              </div>
                 )}

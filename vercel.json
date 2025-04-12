@@ -7,5 +7,52 @@
         "distDir": "build"
       }
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "ALLOW-FROM https://irt-university-backend.onrender.com"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://irt-university-backend.onrender.com https://*.vercel.app; object-src 'self' blob: data:"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/files/(.*)",
+      "dest": "https://irt-university-backend.onrender.com/api/files/$1",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, HEAD",
+        "Access-Control-Allow-Headers": "Range"
+      }
+    }
   ]
 }
