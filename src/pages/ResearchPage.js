@@ -331,8 +331,8 @@ const ResearchPage = () => {
         rel="noopener noreferrer"
         className="text-blue-600 hover:underline"
       >
-        Open PDF in new tab
-      </a>
+        {t('Open PDF in new tab')}
+        </a>
     </p>
 
 
