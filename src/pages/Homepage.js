@@ -235,20 +235,22 @@ export default function Homepage() {
                   <div className="mt-4">
 <iframe
   src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
-  style={{ 
-    width: '100%', 
-    height: '600px', 
+  style={{
+    width: '100%',
+    height: '600px',
     border: 'none',
-    backgroundColor: '#f5f5f5' // Visual loading state
+    backgroundColor: '#f5f5f5', // You can use this for a loading indicator
   }}
   title="PDF Viewer"
   allow="fullscreen"
   sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
   onError={(e) => {
     console.error('PDF load error:', e);
+    // Open in a new tab if iframe fails to load
     window.open(`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`, '_blank');
   }}
 />
+
                   </div>
                 )}
               </div>
