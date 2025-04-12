@@ -250,12 +250,11 @@ const ProgramsInitiativesPage = () => {
                 </button>
                 {modalData.showPdf && (
                   <div className="mt-4">
-<embed
-  src={`https://irt-university-backend.onrender.com/api/files/${fileId}`}
-  type="application/pdf"
-  width="100%"
-  height="100vh"
-/>
+<embed src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`} 
+type="application/pdf"
+ width="100%" 
+ height="100vh"
+  />
 
 
              </div>
