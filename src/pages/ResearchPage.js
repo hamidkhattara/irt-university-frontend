@@ -75,9 +75,10 @@ const ResearchPage = () => {
     const fetchPosts = async () => {
       try {
         const [res1, res2, res3] = await Promise.all([
-          axios.get(`${baseURL}/api/research/latest-publications`),
-          axios.get(`${baseURL}/api/research/ongoing-projects`),
-          axios.get(`${baseURL}/api/research/collaborations-partnerships`)
+          axios.get(`${baseURL}/api/posts?page=research&section=latest-publications`),
+          axios.get(`${baseURL}/api/posts?page=research&section=ongoing-projects`),
+          axios.get(`${baseURL}/api/posts?page=research&section=collaborations-partnerships`)
+
         ]);
         setPublications(res1.data);
         setProjects(res2.data);

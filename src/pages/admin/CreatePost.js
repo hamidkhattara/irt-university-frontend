@@ -72,12 +72,13 @@ const CreatePost = () => {
         }
       });
       
-      if (response.data && response.data.post) {
-        setMessage('✅ Post created successfully! Redirecting...');
-        setTimeout(() => navigate('/admin/posts'), 2000);
-      } else {
-        throw new Error('Invalid response from server');
-      }
+      if (response.data && response.data.message === 'Post created successfully') {
+  setMessage('✅ Post created successfully! Redirecting...');
+  setTimeout(() => navigate('/admin/posts'), 2000);
+} else {
+  throw new Error('Invalid response from server');
+}
+
     } catch (error) {
       console.error('Error:', error.response?.data || error.message);
       setMessage(`❌ Error creating post: ${error.response?.data?.error || error.message}`);

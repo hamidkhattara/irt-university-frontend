@@ -25,9 +25,10 @@ const ProgramsInitiativesPage = () => {
     const fetchData = async () => {
       try {
         const [labsRes, incubRes, fundingRes] = await Promise.all([
-          axios.get(`${baseURL}/api/programs/innovation-labs`),
-          axios.get(`${baseURL}/api/programs/incubation-programs`),
-          axios.get(`${baseURL}/api/programs/funding-opportunities`)
+        axios.get(`${baseURL}/api/posts?page=programs&section=innovation-labs`),
+        axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
+        axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`)
+
         ]);
         setInnovationLabs(labsRes.data);
         setIncubationPrograms(incubRes.data);

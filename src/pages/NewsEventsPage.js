@@ -29,10 +29,11 @@ const NewsEventsPage = () => {
     const fetchData = async () => {
       try {
         const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
-          axios.get(`${baseURL}/api/news-events/webinars-workshops`),
-          axios.get(`${baseURL}/api/news-events/events`),
-          axios.get(`${baseURL}/api/news-events/press-releases`),
-          axios.get(`${baseURL}/api/news-events/announcements`)
+          axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
+         axios.get(`${baseURL}/api/posts?page=news&section=events`),
+         axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
+          axios.get(`${baseURL}/api/posts?page=news&section=announcements`)
+
         ]);
         setNewsList(newsRes.data);
         setEventsList(eventsRes.data);
