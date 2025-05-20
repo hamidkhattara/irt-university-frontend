@@ -25,7 +25,6 @@ const NewsEventsPage = () => {
     return match ? match[1] : null;
   };
 
-  // Replace the fetchData function in NewsEventsPage.js
 const fetchData = async () => {
   try {
     const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
