@@ -43,49 +43,50 @@ const CreatePost = () => {
     setPostData({ ...postData, pdf: e.target.files[0] });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage('');
+  // In CreatePost.js, update the handleSubmit function:
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setMessage('');
 
-    if (!postData.image && !postData.video) {
-      setMessage('❌ Please provide either an image or a video.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('title', postData.title);
-      formData.append('content', postData.content);
-      formData.append('title_ar', postData.title_ar);
-      formData.append('content_ar', postData.content_ar);
-      formData.append('page', postData.page);
-      formData.append('section', postData.section);
-      if (postData.image) formData.append('image', postData.image);
-      if (postData.video) formData.append('video', postData.video);
-      if (postData.pdf) formData.append('pdf', postData.pdf);
-
-const response = await axios.post(`${baseURL}/api/posts`, formData, {
-  headers: {
-    'Content-Type': 'multipart/form-data'
+  if (!postData.image && !postData.video) {
+    setMessage('❌ Please provide either an image or a video.');
+    setIsSubmitting(false);
+    return;
   }
-});
 
-if (response.data) {
-  setMessage('✅ Post created successfully! Redirecting...');
-  setTimeout(() => navigate('/admin/posts'), 2000);
-} else {
-  throw new Error('Invalid response from server');
-}
+  try {
+    const formData = new FormData();
+    formData.append('title', postData.title);
+    formData.append('content', postData.content);
+    formData.append('title_ar', postData.title_ar);
+    formData.append('content_ar', postData.content_ar);
+    formData.append('page', postData.page);
+    formData.append('section', postData.section);
+    if (postData.image) formData.append('image', postData.image);
+    if (postData.video) formData.append('video', postData.video);
+    if (postData.pdf) formData.append('pdf', postData.pdf);
 
-    } catch (error) {
-      console.error('Error:', error.response?.data || error.message);
-      setMessage(`❌ Error creating post: ${error.response?.data?.error || error.message}`);
-    } finally {
-      setIsSubmitting(false);
+    const response = await axios.post(`${baseURL}/api/posts`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    // Updated response handling
+    if (response.data) {
+      setMessage('✅ Post created successfully! Redirecting...');
+      setTimeout(() => navigate('/admin/posts'), 2000);
+    } else {
+      throw new Error('Invalid response from server');
     }
-  };
+  } catch (error) {
+    console.error('Error:', error.response?.data || error.message);
+    setMessage(`❌ Error creating post: ${error.response?.data?.message || error.message}`);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const formatContentWithLinks = (text) => {
     if (!text) return "";
