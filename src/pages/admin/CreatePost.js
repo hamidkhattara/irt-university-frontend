@@ -65,7 +65,7 @@ const CreatePost = () => {
       if (postData.image) formData.append('image', postData.image);
       if (postData.video) formData.append('video', postData.video);
       if (postData.pdf) formData.append('pdf', postData.pdf);
-      
+
 const response = await axios.post(`${baseURL}/api/posts`, formData, {
   headers: {
     'Content-Type': 'multipart/form-data'
@@ -183,19 +183,19 @@ if (response.data) {
           )}
 
           {postData.page === 'news' && (
-            <select
-              className="w-full border p-2 rounded"
-              value={postData.section}
-              onChange={(e) => setPostData({ ...postData, section: e.target.value })}
-              required
-            >
-              <option value="">Select Section</option>
-              <option value="webinars-workshops">Webinars and Workshops</option>
-              <option value="announcements">Announcements</option>
-              <option value="press-releases">Press Releases</option>
-              <option value="events">Upcoming and Past Events</option>
-            </select>
-          )}
+  <select
+    className="w-full border p-2 rounded"
+    value={postData.section}
+    onChange={(e) => setPostData({ ...postData, section: e.target.value })}
+    required
+  >
+    <option value="">Select Section</option>
+    <option value="webinars-workshops">Webinars and Workshops</option>
+    <option value="announcements">Announcements</option>
+    <option value="press-releases">Press Releases</option>
+    <option value="events">Upcoming and Past Events</option>
+  </select>
+)}
 
           <input
             type="file"
