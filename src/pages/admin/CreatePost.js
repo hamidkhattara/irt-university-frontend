@@ -65,14 +65,14 @@ const CreatePost = () => {
       if (postData.image) formData.append('image', postData.image);
       if (postData.video) formData.append('video', postData.video);
       if (postData.pdf) formData.append('pdf', postData.pdf);
-
-      const response = await axios.post(`${baseURL}/api/posts`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
       
-      if (response.data && response.data.message === 'Post created successfully') {
+const response = await axios.post(`${baseURL}/api/posts`, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+});
+
+if (response.data) {
   setMessage('✅ Post created successfully! Redirecting...');
   setTimeout(() => navigate('/admin/posts'), 2000);
 } else {
