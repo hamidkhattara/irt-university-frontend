@@ -20,7 +20,7 @@
 .navbar-logo {
   display: flex;
   align-items: center;
-  margin-right: 4rem; /* Increased space between logo and menu */
+  margin-right: 4rem; /* Desktop: increased space between logo and menu */
 }
 
 [dir="rtl"] .navbar-logo {
@@ -211,34 +211,51 @@
 /* Mobile Styles */
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
     padding: 1rem;
   }
   
   .navbar-container {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .navbar-main-content {
-    flex-direction: column;
-    width: 100%;
-    display: none;
-  }
-  
-  .navbar-main-content.mobile-menu-open {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .navbar-logo {
+    margin: 0;
+    order: 1; /* Logo first in LTR */
+  }
+  
+  [dir="rtl"] .navbar-logo {
+    order: 2; /* Logo last in RTL */
   }
   
   .mobile-menu-button {
     display: block;
+    order: 2; /* Menu button last in LTR */
   }
-
+  
+  [dir="rtl"] .mobile-menu-button {
+    order: 1; /* Menu button first in RTL */
+  }
+  
+  .navbar-main-content {
+    display: none;
+    width: 100%;
+    order: 3; /* Always below */
+    margin-top: 1rem;
+  }
+  
+  .navbar-main-content.mobile-menu-open {
+    display: flex;
+    flex-direction: column;
+  }
+  
   .navbar-menu {
     flex-direction: column;
     width: 100%;
     gap: 1rem;
-    margin: 1rem 0;
+    margin: 1rem 0 0 0;
   }
 
   .dropdown-menu {
