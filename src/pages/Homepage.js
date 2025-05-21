@@ -62,17 +62,18 @@ export default function Homepage() {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content;
     const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage;
-    const pdfUrl = post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null;
 
-    setModalData({
-      image: imageUrl,
-      title,
-      content,
-      video: post.video || "",
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-      pdfId: post.pdfId || "", // Add this line
-      showPdf: false
-    });
+    
+setModalData({
+  image: imageUrl,
+  title,
+  content,
+  video: post.video || "",
+  pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
+  pdfId: post.pdfId || "",
+  showPdf: false
+});
+
   };
 
   const handleOpenPdf = (e) => {

@@ -41,6 +41,9 @@ const fetchData = async () => {
     console.error("Error fetching News & Events content:", error);
   }
 };
+useEffect(() => {
+  fetchData();
+}, []);
  
   const handleLoadMore = (type) => {
     switch (type) {
