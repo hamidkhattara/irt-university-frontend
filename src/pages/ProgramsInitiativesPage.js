@@ -49,21 +49,21 @@ const ProgramsInitiativesPage = () => {
     });
   };
 
-  const handleImageClick = (item) => {
-    const isArabic = i18n.language === "ar";
-    const title = isArabic ? item.title_ar : item.title;
-    const content = isArabic ? item.content_ar : item.content;
+const handleImageClick = (item) => {
+  const isArabic = i18n.language === "ar";
+  const title = isArabic ? item.title_ar : item.title;
+  const content = isArabic ? item.content_ar : item.content;
 
-    setModalData({
-      image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image",
-      title,
-      content,
-      video: item.video || "",
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-      pdfId: post.pdfId || "", // Add this line
-      showPdf: false
-    });
-  };
+  setModalData({
+    image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : "https://via.placeholder.com/600x400?text=Program+Image",
+    title,
+    content,
+    video: item.video || "",
+    pdfUrl: item.pdfId ? `${baseURL}/api/files/${item.pdfId}` : "",
+    pdfId: item.pdfId || "",
+    showPdf: false
+  });
+};
 
   const handleOpenPdf = (e) => {
     e.stopPropagation();
