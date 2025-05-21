@@ -29,68 +29,50 @@ const Navbar = () => {
     setDropdown(dropdown === page ? null : page);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdown && !event.target.closest('.navbar-menu li')) {
-        setDropdown(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdown]);
-
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setIsMobileMenuOpen(false);
-        setDropdown(null);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
+  };
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const handleNavigation = () => {
+  const handleNavigation = (path, sectionId = null) => {
     setIsMobileMenuOpen(false);
     setDropdown(null);
+    
+    if (path === location.pathname && sectionId) {
+      // If we're already on the same page, just scroll to the section
+      scrollToSection(sectionId);
+    } else if (sectionId) {
+      // If we need to navigate to a new page and then scroll
+      navigate(path, {
+        state: { scrollTo: sectionId }
+      });
+    } else {
+      // Regular navigation
+      navigate(path);
+    }
   };
+
+  useEffect(() => {
+    // Handle scroll after navigation
+    if (location.state?.scrollTo) {
+      const element = document.getElementById(location.state.scrollTo);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        // Clear the state to prevent scrolling on every render
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location, navigate]);
+
+  // ... (keep all other useEffect hooks the same)
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <div className="navbar-logo">
-          <Link to="/" onClick={handleNavigation}>
+          <Link to="/" onClick={() => handleNavigation('/')}>
             <img src={logo} alt="IRT University Logo" className="logo-image" />
             <span className="logo-text">{t("IRT University")}</span>
           </Link>
@@ -115,7 +97,7 @@ const Navbar = () => {
               <Link 
                 to="/" 
                 className={location.pathname === '/' ? 'active' : ''} 
-                onClick={handleNavigation}
+                onClick={() => handleNavigation('/')}
               >
                 {t("Home")}
               </Link>
@@ -124,36 +106,57 @@ const Navbar = () => {
               <Link 
                 to="/about" 
                 className={location.pathname === '/about' ? 'active' : ''} 
-                onClick={handleNavigation}
+                onClick={() => handleNavigation('/about')}
               >
                 {t("About")}
               </Link>
             </li>
-            <li
-              onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('programs')}
-              onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
-              onClick={() => isMobileMenuOpen && toggleDropdown('programs')}
-              className={dropdown === 'programs' ? 'active' : ''}
-            >
-              <Link
-                to="/programs-initiatives"
-                className={location.pathname === '/programs-initiatives' ? 'active' : ''}
-                onClick={handleNavigation}
-              >
-                {t("Programs & Initiatives")}
-              </Link>
-              <ul className="dropdown-menu">
-                <li onClick={() => { navigate('/programs-initiatives#innovation-labs'); handleNavigation(); }}>
-                  {t("Innovation labs")}
-                </li>
-                <li onClick={() => { navigate('/programs-initiatives#technology-incubation'); handleNavigation(); }}>
-                  {t("Technology incubation programs")}
-                </li>
-                <li onClick={() => { navigate('/programs-initiatives#research-funding'); handleNavigation(); }}>
-                  {t("Research funding opportunities")}
-                </li>
-              </ul>
-            </li>
+           <li
+  onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('programs')}
+  onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
+  onClick={() => isMobileMenuOpen && toggleDropdown('programs')}
+  className={dropdown === 'programs' ? 'active' : ''}
+>
+  <Link
+    to="/programs-initiatives"
+    className={location.pathname === '/programs-initiatives' ? 'active' : ''}
+    onClick={(e) => {
+      e.preventDefault();
+      handleNavigation('/programs-initiatives');
+    }}
+  >
+    {t("Programs & Initiatives")}
+  </Link>
+  <ul className="dropdown-menu">
+    <li onClick={() => {
+      handleNavigation('/programs-initiatives', 'innovation-labs');
+      setTimeout(() => {
+        const element = document.getElementById('innovation-labs');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }}>
+      {t("Innovation Labs")}
+    </li>
+    <li onClick={() => {
+      handleNavigation('/programs-initiatives', 'technology-incubation');
+      setTimeout(() => {
+        const element = document.getElementById('technology-incubation');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }}>
+      {t("Technology Incubation Programs")}
+    </li>
+    <li onClick={() => {
+      handleNavigation('/programs-initiatives', 'research-funding');
+      setTimeout(() => {
+        const element = document.getElementById('research-funding');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }}>
+      {t("Research Funding Opportunities")}
+    </li>
+  </ul>
+</li>
             <li
               onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('research')}
               onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
@@ -163,19 +166,19 @@ const Navbar = () => {
               <Link
                 to="/research"
                 className={location.pathname === '/research' ? 'active' : ''}
-                onClick={handleNavigation}
+                onClick={() => handleNavigation('/research')}
               >
                 {t("Research & Insights")}
               </Link>
               <ul className="dropdown-menu">
-                <li onClick={() => { navigate('/research#latest-research'); handleNavigation(); }}>
-                  {t("Latest research publications")}
+                <li onClick={() => handleNavigation('/research', 'latest-research')}>
+                  {t("Latest Research Publications")}
                 </li>
-                <li onClick={() => { navigate('/research#ongoing-projects'); handleNavigation(); }}>
-                  {t("Ongoing projects")}
+                <li onClick={() => handleNavigation('/research', 'ongoing-projects')}>
+                  {t("Ongoing Projects")}
                 </li>
-                <li onClick={() => { navigate('/research#collaborations'); handleNavigation(); }}>
-                  {t("Collaborations and partnerships")}
+                <li onClick={() => handleNavigation('/research', 'collaborations')}>
+                  {t("Collaborations and Partnerships")}
                 </li>
               </ul>
             </li>
@@ -188,21 +191,21 @@ const Navbar = () => {
               <Link
                 to="/news-events"
                 className={location.pathname === '/news-events' ? 'active' : ''}
-                onClick={handleNavigation}
+                onClick={() => handleNavigation('/news-events')}
               >
                 {t("News & Events")}
               </Link>
               <ul className="dropdown-menu">
-                <li onClick={() => { navigate('/news-events#upcoming-events'); handleNavigation(); }}>
-                  {t("Upcoming and past events")}
+                <li onClick={() => handleNavigation('/news-events', 'upcoming-events')}>
+                  {t("Upcoming and Past Events")}
                 </li>
-                <li onClick={() => { navigate('/news-events#webinars'); handleNavigation(); }}>
-                  {t("Webinars and workshops")}
+                <li onClick={() => handleNavigation('/news-events', 'webinars')}>
+                {t("Webinars and Workshops")}
                 </li>
-                <li onClick={() => { navigate('/news-events#press-releases'); handleNavigation(); }}>
-                  {t("Press releases")}
+                <li onClick={() => handleNavigation('/news-events', 'press-releases')}>
+                  {t("Press Releases")}
                 </li>
-                <li onClick={() => { navigate('/news-events#announcements'); handleNavigation(); }}>
+                <li onClick={() => handleNavigation('/news-events', 'announcements')}>
                   {t("Announcements")}
                 </li>
               </ul>
@@ -211,7 +214,7 @@ const Navbar = () => {
               <Link 
                 to="/contact" 
                 className={location.pathname === '/contact' ? 'active' : ''} 
-                onClick={handleNavigation}
+                onClick={() => handleNavigation('/contact')}
               >
                 {t("Contact")}
               </Link>
@@ -221,7 +224,7 @@ const Navbar = () => {
                 <Link 
                   to="/admin/posts" 
                   className={location.pathname.startsWith('/admin') ? 'active' : ''} 
-                  onClick={handleNavigation}
+                  onClick={() => handleNavigation('/admin/posts')}
                 >
                   {t("Admin Panel")}
                 </Link>
@@ -244,13 +247,13 @@ const Navbar = () => {
               <div className="auth-buttons">
                 <button
                   className="login-btn register-btn"
-                  onClick={() => { navigate('/register'); handleNavigation(); }}
+                  onClick={() => handleNavigation('/register')}
                 >
                   {t("Register")}
                 </button>
                 <button
                   className="login-btn"
-                  onClick={() => { navigate('/login'); handleNavigation(); }}
+                  onClick={() => handleNavigation('/login')}
                 >
                   {t("Log in")}
                 </button>

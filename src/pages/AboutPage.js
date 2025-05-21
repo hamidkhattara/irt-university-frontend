@@ -9,6 +9,8 @@ const AboutPage = () => {
   return (
     <div className="bg-white text-gray-900 min-h-screen" dir={t("dir")}>
       <Navbar />
+          <main className="flex-grow">
+
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("about.heroTitle")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">{t("about.heroSubtitle")}</p>
@@ -72,6 +74,7 @@ const AboutPage = () => {
         <p className="mt-6 text-lg">{t("about.contactAddress")}</p>
         <p className="mt-2 text-lg">{t("about.contactDetails")}</p>
       </section>
+      </main>
       <Footer />
     </div>
   );

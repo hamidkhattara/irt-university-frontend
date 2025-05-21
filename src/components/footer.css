@@ -1,0 +1,64 @@
+/* footer.css */
+.footer-container {
+  background-color: #172554; /* This is bg-blue-950 in Tailwind */
+  color: white;
+  padding: 2rem 1rem; /* py-8 px-4 */
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1280px; /* container max-width */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-center {
+  text-align: center;
+}
+
+.footer-title {
+  font-size: 1.125rem; /* text-lg */
+  line-height: 1.75rem;
+  font-weight: 600; /* font-semibold */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.footer-email {
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem;
+}
+
+.footer-social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem; /* gap-4 */
+  margin-top: 1rem; /* mt-4 */
+}
+
+.footer-social-icon {
+  font-size: 1.25rem; /* text-xl */
+  transition: color 0.2s;
+}
+
+.footer-social-icon:hover {
+  color: #60a5fa; /* hover:text-blue-400 */
+}
+
+.footer-copyright {
+  margin-top: 1rem; /* mt-4 */
+  font-size: 0.75rem; /* text-xs */
+  line-height: 1rem;
+}
+
+/* Ensure no white space below footer */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}

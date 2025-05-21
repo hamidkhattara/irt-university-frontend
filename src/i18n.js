@@ -24,9 +24,10 @@ i18n
   .init({
     fallbackLng: 'en',
     supportedLngs: ['en', 'ar'],
-    backend: {
-      loadPath: '/locales/{{lng}}/translation.json', // Path to your translation files
-    },
+  backend: {
+  loadPath: `/locales/{{lng}}/translation.json?v=${Date.now()}`, // disables caching
+},
+
     detection: {
       order: ['localStorage', 'cookie', 'htmlTag', 'path', 'subdomain'],
       caches: ['localStorage'],

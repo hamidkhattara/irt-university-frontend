@@ -40,8 +40,8 @@
     "fail": "Failed to send message.",
     "error": "Something went wrong.",
     "detailsTitle": "Our Contact Details",
-    "address": "IRT University, 123 Innovation Street, Tech City",
-    "emailPhone": "Email: irtuniv@gmail.com | Phone: +1 234 567 890"
+    "address": "IRT University",
+    "emailPhone": "Email: irtuniv@gmail.com "
   },
   "research": {
     "title": "Research & Insights",
@@ -133,7 +133,10 @@
   "Explore Programs": "Explore Programs",
   "Load More": "Load More ",
   "Show Less": "Load More ",
-
+ "Upcoming and Past Events": "Upcoming and Past Events",
+  "Webinars and Workshops": "Webinars and Workshops",
+  "Press Releases": "Press Releases",
+  "Announcements": "Announcements",
 
   
   "verifyEmail": {

@@ -155,9 +155,11 @@ setModalData({
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 font-sans">
-      <Navbar />
+<div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
+        <Navbar />
       <HeroSlider />
+      
+          <main className="flex-grow">
 
       <section className="py-12 px-6">
         <h2 className="text-3xl font-bold text-center mb-6">📰 {t("latestNews")}</h2>
@@ -189,7 +191,7 @@ setModalData({
           </div>
         )}
       </section>
-
+    </main>
       {modalData.image && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
