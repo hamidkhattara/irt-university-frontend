@@ -25,25 +25,27 @@ const NewsEventsPage = () => {
     return match ? match[1] : null;
   };
 
-const fetchData = async () => {
-  try {
-    const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
-      axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
-      axios.get(`${baseURL}/api/posts?page=news&section=events`),
-      axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
-      axios.get(`${baseURL}/api/posts?page=news&section=announcements`)
-    ]);
-    setNewsList(newsRes.data);
-    setEventsList(eventsRes.data);
-    setPressReleases(pressRes.data);
-    setAnnouncements(announceRes.data);
-  } catch (error) {
-    console.error("Error fetching News & Events content:", error);
-  }
-};
 useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
+        axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
+        axios.get(`${baseURL}/api/posts?page=news&section=events`),
+        axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
+        axios.get(`${baseURL}/api/posts?page=news&section=announcements`)
+      ]);
+      setNewsList(newsRes.data);
+      setEventsList(eventsRes.data);
+      setPressReleases(pressRes.data);
+      setAnnouncements(announceRes.data);
+    } catch (error) {
+      console.error("Error fetching News & Events content:", error);
+    }
+  };
+
   fetchData();
-}, []);
+}, [baseURL]);
+
  
   const handleLoadMore = (type) => {
     switch (type) {
