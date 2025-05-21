@@ -1,3 +1,4 @@
+/* Navbar Container */
 .navbar {
   display: flex;
   flex-direction: column;
@@ -8,6 +9,7 @@
   z-index: 1000;
 }
 
+/* Top Section (Logo + Mobile Button) */
 .navbar-top {
   display: flex;
   justify-content: space-between;
@@ -34,6 +36,7 @@
   margin-right: 10px;
 }
 
+/* Mobile Menu Button */
 .mobile-menu-button {
   display: none;
   background: none;
@@ -41,15 +44,25 @@
   font-size: 1.5rem;
   color: #1a365d;
   cursor: pointer;
+  padding: 0.5rem;
 }
 
+/* Navbar Content (Menu + Icons) */
 .navbar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  max-height: 0;
 }
 
+.navbar-content.mobile-menu-open {
+  max-height: 1000px;
+}
+
+/* Main Menu */
 .navbar-menu {
   display: flex;
   list-style: none;
@@ -68,13 +81,16 @@
   padding: 0.5rem 1rem;
   display: block;
   transition: color 0.3s;
+  border-radius: 4px;
 }
 
 .navbar-menu li a:hover,
 .navbar-menu li a.active {
   color: #2c5282;
+  background-color: #f7fafc;
 }
 
+/* Dropdown Menu */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -86,12 +102,18 @@
   padding: 0.5rem 0;
   min-width: 200px;
   z-index: 100;
-  display: none;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
 }
 
 .navbar-menu li:hover .dropdown-menu,
-.navbar-menu li:focus-within .dropdown-menu {
-  display: block;
+.navbar-menu li:focus-within .dropdown-menu,
+.navbar-menu li.active .dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .dropdown-menu li {
@@ -108,12 +130,14 @@
   background-color: #f7fafc;
 }
 
+/* Right Side Icons */
 .navbar-icons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
+/* Language Switcher (without flags) */
 .language-switcher {
   padding: 0.5rem;
   border: 1px solid #cbd5e0;
@@ -121,8 +145,15 @@
   background-color: #fff;
   color: #1a365d;
   cursor: pointer;
+  appearance: none;
+  padding-right: 1.5rem;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1em;
 }
 
+/* Auth Buttons */
 .auth-buttons {
   display: flex;
   gap: 0.5rem;
@@ -152,7 +183,7 @@
   background-color: #f7fafc;
 }
 
-/* Mobile styles */
+/* Mobile Styles */
 @media (max-width: 768px) {
   .mobile-menu-button {
     display: block;
@@ -161,20 +192,16 @@
   .navbar-content {
     flex-direction: column;
     align-items: flex-start;
-    display: none;
-  }
-
-  .navbar-content.mobile-menu-open {
-    display: flex;
   }
 
   .navbar-menu {
     flex-direction: column;
     width: 100%;
+    margin-top: 1rem;
   }
 
   .navbar-menu li {
-    margin: 0.5rem 0;
+    margin: 0.25rem 0;
   }
 
   .dropdown-menu {
@@ -183,15 +210,15 @@
     display: none;
     width: 100%;
     padding-left: 1rem;
-  }
-
-  .navbar-menu li:hover .dropdown-menu,
-  .navbar-menu li:focus-within .dropdown-menu {
-    display: none;
+    opacity: 1;
+    transform: none;
+    max-height: 0;
+    overflow: hidden;
   }
 
   .navbar-menu li.active .dropdown-menu {
     display: block;
+    max-height: 500px;
   }
 
   .navbar-icons {
@@ -212,4 +239,40 @@
     width: 100%;
     text-align: center;
   }
+
+  .language-switcher {
+    width: 100%;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .navbar-logo a {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .logo-image {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+[dir="rtl"] .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .language-switcher {
+  padding-right: 0.5rem;
+  padding-left: 1.5rem;
+  background-position: left 0.5rem center;
+}
+
+/* Accessibility */
+.mobile-menu-button:focus,
+.navbar-menu li a:focus,
+.dropdown-menu li:focus,
+.language-switcher:focus,
+.login-btn:focus,
+.register-btn:focus {
+  outline: 2px solid #2c5282;
+  outline-offset: 2px;
 }
