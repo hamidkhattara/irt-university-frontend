@@ -41,7 +41,7 @@ const fetchData = async () => {
     console.error("Error fetching News & Events content:", error);
   }
 };
-
+ 
   const handleLoadMore = (type) => {
     switch (type) {
       case "news": setVisibleNews((prev) => prev + 3); break;

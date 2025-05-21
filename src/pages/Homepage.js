@@ -250,7 +250,7 @@ export default function Homepage() {
         {t('Open PDF in new tab')}
         </a>
     </p>
-
+  
 
                   </div>
                 )}

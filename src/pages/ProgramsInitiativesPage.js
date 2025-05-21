@@ -29,7 +29,7 @@ const ProgramsInitiativesPage = () => {
         axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
         axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`)
 
-        ]);
+        ]); 
         setInnovationLabs(labsRes.data);
         setIncubationPrograms(incubRes.data);
         setFundingOpportunities(fundingRes.data);

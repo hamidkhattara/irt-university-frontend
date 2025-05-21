@@ -85,7 +85,7 @@ const ResearchPage = () => {
         setCollaborations(res3.data);
       } catch (err) {
         console.error("Error fetching research posts", err);
-      }
+      }   
     };
     fetchPosts();
   }, [baseURL]);
