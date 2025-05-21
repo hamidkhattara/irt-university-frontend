@@ -97,7 +97,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       {/* Logo and Mobile Menu Button */}
-      <div className="navbar-top">
+      <div className="navbar-main">
         <div className="navbar-logo">
           <Link to="/" onClick={handleNavigation}>
             <img src={logo} alt="IRT University Logo" className="logo-image" />

@@ -233,7 +233,7 @@ setModalData({
                   {t("Open PDF")}
                 </button>
  {modalData.showPdf && (
-  <div className="mt-4 w-full h-[70vh]">
+  <div className="mt-4 w-full h-[100vh]">
     <iframe 
       src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
       width="100%"
