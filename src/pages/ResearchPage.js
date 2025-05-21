@@ -316,14 +316,15 @@ const ResearchPage = () => {
                 >
                   {t("Open PDF")}
                 </button>
-                {modalData.showPdf && (
-                  <div className="mt-4">
+               {modalData.showPdf && (
+  <div className="mt-4 w-full h-[70vh]">
     <iframe 
       src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
       width="100%"
       height="100%"
-      style={{ border: 'none' }}
+      style={{ border: 'none', minHeight: '500px' }}
       title="PDF Viewer"
+      className="w-full h-full"
     />
     <p className="text-center mt-2">
       <a 
@@ -333,9 +334,8 @@ const ResearchPage = () => {
         className="text-blue-600 hover:underline"
       >
         {t('Open PDF in new tab')}
-        </a>
+      </a>
     </p>
-
 
 
                   </div>

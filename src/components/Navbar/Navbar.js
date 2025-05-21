@@ -250,7 +250,6 @@ const Navbar = () => {
           >
             <option value="en">English</option>
             <option value="ar">العربية</option>
-            {/* Add more languages as needed */}
           </select>
 
           {!user ? (

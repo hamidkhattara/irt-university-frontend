@@ -54,12 +54,26 @@
   align-items: center;
   width: 100%;
   transition: all 0.3s ease-in-out;
-  overflow: hidden;
-  max-height: 0;
 }
 
-.navbar-content.mobile-menu-open {
-  max-height: 1000px;
+/* Desktop view - always show content */
+@media (min-width: 769px) {
+  .navbar-content {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* Mobile view - collapsed by default */
+@media (max-width: 768px) {
+  .navbar-content {
+    max-height: 0;
+    overflow: hidden;
+  }
+  
+  .navbar-content.mobile-menu-open {
+    max-height: 1000px;
+  }
 }
 
 /* Main Menu */
@@ -137,7 +151,7 @@
   gap: 0.5rem;
 }
 
-/* Language Switcher (without flags) */
+/* Language Switcher */
 .language-switcher {
   padding: 0.5rem;
   border: 1px solid #cbd5e0;
