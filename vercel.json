@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "package.json",
@@ -6,6 +7,16 @@
       "config": {
         "distDir": "build"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/files/(.*)",
+      "dest": "https://irt-university-backend.onrender.com/api/files/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
@@ -42,16 +53,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/files/:match*",
-      "destination": "https://irt-university-backend.onrender.com/api/files/:match*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
