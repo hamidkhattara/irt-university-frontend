@@ -48,6 +48,10 @@
     {
       "source": "/api/files/:match*",
       "destination": "https://irt-university-backend.onrender.com/api/files/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

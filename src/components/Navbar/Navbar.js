@@ -17,6 +17,7 @@ const Navbar = () => {
     const selectedLang = e.target.value;
     i18n.changeLanguage(selectedLang);
     document.documentElement.dir = selectedLang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = selectedLang;
   };
 
   const handleLogout = () => {
@@ -41,32 +42,31 @@ const Navbar = () => {
     setDropdown(null);
     
     if (path === location.pathname && sectionId) {
-      // If we're already on the same page, just scroll to the section
       scrollToSection(sectionId);
     } else if (sectionId) {
-      // If we need to navigate to a new page and then scroll
       navigate(path, {
         state: { scrollTo: sectionId }
       });
     } else {
-      // Regular navigation
       navigate(path);
     }
   };
 
   useEffect(() => {
-    // Handle scroll after navigation
     if (location.state?.scrollTo) {
       const element = document.getElementById(location.state.scrollTo);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
-        // Clear the state to prevent scrolling on every render
         navigate(location.pathname, { replace: true, state: {} });
       }
     }
   }, [location, navigate]);
 
-  // ... (keep all other useEffect hooks the same)
+  // Set initial direction based on language
+  useEffect(() => {
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
 
   return (
     <nav className="navbar">
@@ -111,52 +111,52 @@ const Navbar = () => {
                 {t("About")}
               </Link>
             </li>
-           <li
-  onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('programs')}
-  onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
-  onClick={() => isMobileMenuOpen && toggleDropdown('programs')}
-  className={dropdown === 'programs' ? 'active' : ''}
->
-  <Link
-    to="/programs-initiatives"
-    className={location.pathname === '/programs-initiatives' ? 'active' : ''}
-    onClick={(e) => {
-      e.preventDefault();
-      handleNavigation('/programs-initiatives');
-    }}
-  >
-    {t("Programs & Initiatives")}
-  </Link>
-  <ul className="dropdown-menu">
-    <li onClick={() => {
-      handleNavigation('/programs-initiatives', 'innovation-labs');
-      setTimeout(() => {
-        const element = document.getElementById('innovation-labs');
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }}>
-      {t("Innovation Labs")}
-    </li>
-    <li onClick={() => {
-      handleNavigation('/programs-initiatives', 'technology-incubation');
-      setTimeout(() => {
-        const element = document.getElementById('technology-incubation');
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }}>
-      {t("Technology Incubation Programs")}
-    </li>
-    <li onClick={() => {
-      handleNavigation('/programs-initiatives', 'research-funding');
-      setTimeout(() => {
-        const element = document.getElementById('research-funding');
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }}>
-      {t("Research Funding Opportunities")}
-    </li>
-  </ul>
-</li>
+            <li
+              onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('programs')}
+              onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
+              onClick={() => isMobileMenuOpen && toggleDropdown('programs')}
+              className={dropdown === 'programs' ? 'active' : ''}
+            >
+              <Link
+                to="/programs-initiatives"
+                className={location.pathname === '/programs-initiatives' ? 'active' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavigation('/programs-initiatives');
+                }}
+              >
+                {t("Programs & Initiatives")}
+              </Link>
+              <ul className="dropdown-menu">
+                <li onClick={() => {
+                  handleNavigation('/programs-initiatives', 'innovation-labs');
+                  setTimeout(() => {
+                    const element = document.getElementById('innovation-labs');
+                    if (element) element.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}>
+                  {t("Innovation Labs")}
+                </li>
+                <li onClick={() => {
+                  handleNavigation('/programs-initiatives', 'technology-incubation');
+                  setTimeout(() => {
+                    const element = document.getElementById('technology-incubation');
+                    if (element) element.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}>
+                  {t("Technology Incubation Programs")}
+                </li>
+                <li onClick={() => {
+                  handleNavigation('/programs-initiatives', 'research-funding');
+                  setTimeout(() => {
+                    const element = document.getElementById('research-funding');
+                    if (element) element.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}>
+                  {t("Research Funding Opportunities")}
+                </li>
+              </ul>
+            </li>
             <li
               onMouseEnter={() => !isMobileMenuOpen && toggleDropdown('research')}
               onMouseLeave={() => !isMobileMenuOpen && toggleDropdown(null)}
@@ -200,7 +200,7 @@ const Navbar = () => {
                   {t("Upcoming and Past Events")}
                 </li>
                 <li onClick={() => handleNavigation('/news-events', 'webinars')}>
-                {t("Webinars and Workshops")}
+                  {t("Webinars and Workshops")}
                 </li>
                 <li onClick={() => handleNavigation('/news-events', 'press-releases')}>
                   {t("Press Releases")}
@@ -233,15 +233,16 @@ const Navbar = () => {
           </ul>
 
           <div className="navbar-icons">
-            <select
-              className="language-switcher"
-              onChange={handleLanguageChange}
-              value={i18n.language}
-              aria-label={t("Language selector")}
-            >
-              <option value="en">English</option>
-              <option value="ar">العربية</option>
-            </select>
+            <div className="language-switcher">
+              <select
+                onChange={handleLanguageChange}
+                value={i18n.language}
+                aria-label={t("Language selector")}
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
 
             {!user ? (
               <div className="auth-buttons">

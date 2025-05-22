@@ -20,12 +20,12 @@
 .navbar-logo {
   display: flex;
   align-items: center;
-  margin-right: 4rem; /* Desktop: increased space between logo and menu */
+  margin-right: 4rem;
 }
 
 [dir="rtl"] .navbar-logo {
   margin-right: 0;
-  margin-left: 4rem; /* Mirror for RTL */
+  margin-left: 4rem;
 }
 
 .navbar-logo a {
@@ -59,12 +59,12 @@
   padding: 0;
   align-items: center;
   gap: 1.5rem;
-  margin-left: 1rem; /* Added space */
+  margin-left: 1rem;
 }
 
 [dir="rtl"] .navbar-menu {
   margin-left: 0;
-  margin-right: 1rem; /* Mirror for RTL */
+  margin-right: 1rem;
 }
 
 .navbar-menu li {
@@ -115,7 +115,7 @@
 
 [dir="rtl"] .dropdown-menu {
   left: auto;
-  right: 0; /* RTL alignment */
+  right: 0;
 }
 
 .navbar-menu li:hover .dropdown-menu,
@@ -147,21 +147,39 @@
 
 [dir="rtl"] .navbar-icons {
   margin-left: 0;
-  margin-right: auto; /* RTL adjustment */
+  margin-right: auto;
 }
 
 /* Language Selector */
 .language-switcher {
-  padding: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.language-switcher select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.5rem 2rem 0.5rem 1rem;
   border-radius: 4px;
   background-color: white;
   color: #333;
   border: none;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1rem;
 }
 
-.language-switcher:hover {
-  border-color: #aaa;
+[dir="rtl"] .language-switcher select {
+  padding: 0.5rem 1rem 0.5rem 2rem;
+  background-position: left 0.7rem center;
+}
+
+.language-switcher select:hover {
   background-color: #f5f5f5;
 }
 
@@ -206,56 +224,80 @@
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
+  padding: 0.5rem;
+  margin-left: 1rem;
 }
 
-/* Mobile Styles */
+[dir="rtl"] .mobile-menu-button {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+/* Mobile Styles - COMPLETELY REVISED */
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem;
+    flex-direction: column;
+    position: relative;
   }
-  
+
   .navbar-container {
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
+    position: relative;
+    z-index: 1001; /* Keep above menu */
   }
-  
+
   .navbar-logo {
     margin: 0;
-    order: 1; /* Logo first in LTR */
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 60px);
   }
-  
+
   [dir="rtl"] .navbar-logo {
-    order: 2; /* Logo last in RTL */
+    margin: 0;
+    text-align: right;
   }
-  
+
   .mobile-menu-button {
     display: block;
-    order: 2; /* Menu button last in LTR */
+    order: 2;
+    flex-shrink: 0;
   }
-  
+
   [dir="rtl"] .mobile-menu-button {
-    order: 1; /* Menu button first in RTL */
+    order: 2;
   }
-  
+
   .navbar-main-content {
     display: none;
     width: 100%;
-    order: 3; /* Always below */
-    margin-top: 1rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #001f3f;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
   }
-  
+
+  [dir="rtl"] .navbar-main-content {
+    left: auto;
+    right: 0;
+  }
+
   .navbar-main-content.mobile-menu-open {
     display: flex;
-    flex-direction: column;
   }
-  
+
   .navbar-menu {
     flex-direction: column;
     width: 100%;
     gap: 1rem;
-    margin: 1rem 0 0 0;
+    margin: 0;
   }
 
   .dropdown-menu {
@@ -265,6 +307,7 @@
     width: 100%;
     padding-left: 1rem;
     background-color: rgba(0, 31, 63, 0.8);
+    margin-top: 0.5rem;
   }
 
   [dir="rtl"] .dropdown-menu {
@@ -281,17 +324,22 @@
     width: 100%;
     margin-top: 1rem;
     gap: 1rem;
-    margin-left: 0;
   }
 
   [dir="rtl"] .navbar-icons {
-    margin-right: 0;
+    align-items: flex-end;
   }
 
   .auth-buttons {
     flex-direction: column;
     width: 100%;
     gap: 0.5rem;
+  }
+
+  /* RTL specific adjustments */
+  [dir="rtl"] .navbar-menu li a,
+  [dir="rtl"] .dropdown-menu li {
+    text-align: right;
   }
 }
 
