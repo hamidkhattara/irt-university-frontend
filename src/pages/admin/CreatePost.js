@@ -43,50 +43,48 @@ const CreatePost = () => {
     setPostData({ ...postData, pdf: e.target.files[0] });
   };
 
-  // In CreatePost.js, update the handleSubmit function:
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setMessage('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setMessage('');
 
-  if (!postData.image && !postData.video) {
-    setMessage('❌ Please provide either an image or a video.');
-    setIsSubmitting(false);
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append('title', postData.title);
-    formData.append('content', postData.content);
-    formData.append('title_ar', postData.title_ar);
-    formData.append('content_ar', postData.content_ar);
-    formData.append('page', postData.page);
-    formData.append('section', postData.section);
-    if (postData.image) formData.append('image', postData.image);
-    if (postData.video) formData.append('video', postData.video);
-    if (postData.pdf) formData.append('pdf', postData.pdf);
-
-    const response = await axios.post(`${baseURL}/api/posts`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-
-    // Updated response handling
-    if (response.data) {
-      setMessage('✅ Post created successfully! Redirecting...');
-      setTimeout(() => navigate('/admin/posts'), 2000);
-    } else {
-      throw new Error('Invalid response from server');
+    if (!postData.image && !postData.video) {
+      setMessage('❌ Please provide either an image or a video.');
+      setIsSubmitting(false);
+      return;
     }
-  } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-    setMessage(`❌ Error creating post: ${error.response?.data?.message || error.message}`);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+
+    try {
+      const formData = new FormData();
+      formData.append('title', postData.title);
+      formData.append('content', postData.content);
+      formData.append('title_ar', postData.title_ar);
+      formData.append('content_ar', postData.content_ar);
+      formData.append('page', postData.page);
+      formData.append('section', postData.section);
+      if (postData.image) formData.append('image', postData.image);
+      if (postData.video) formData.append('video', postData.video);
+      if (postData.pdf) formData.append('pdf', postData.pdf);
+
+      const response = await axios.post(`${baseURL}/api/posts`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data) {
+        setMessage('✅ Post created successfully! Redirecting...');
+        setTimeout(() => navigate('/admin/posts'), 2000);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
+      setMessage(`❌ Error creating post: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const formatContentWithLinks = (text) => {
     if (!text) return "";
@@ -184,19 +182,40 @@ const handleSubmit = async (e) => {
           )}
 
           {postData.page === 'news' && (
-  <select
-    className="w-full border p-2 rounded"
-    value={postData.section}
-    onChange={(e) => setPostData({ ...postData, section: e.target.value })}
-    required
-  >
-    <option value="">Select Section</option>
-    <option value="webinars-workshops">Webinars and Workshops</option>
-    <option value="announcements">Announcements</option>
-    <option value="press-releases">Press Releases</option>
-    <option value="events">Upcoming and Past Events</option>
-  </select>
-)}
+            <select
+              className="w-full border p-2 rounded"
+              value={postData.section}
+              onChange={(e) => setPostData({ ...postData, section: e.target.value })}
+              required
+            >
+              <option value="">Select Section</option>
+              <option value="webinars-workshops">Webinars and Workshops</option>
+              <option value="announcements">Announcements</option>
+              <option value="press-releases">Press Releases</option>
+              <option value="events">Upcoming and Past Events</option>
+            </select>
+          )}
+
+          {postData.image && (
+            <div className="mb-2">
+              <p className="text-sm text-gray-600">Selected Image:</p>
+              <img 
+                src={URL.createObjectURL(postData.image)} 
+                alt="Preview" 
+                className="max-h-40 mt-1"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setPostData({ ...postData, image: null })}
+                className="mt-2 text-sm text-red-600 hover:text-red-800"
+              >
+                Remove Image
+              </button>
+            </div>
+          )}
 
           <input
             type="file"
