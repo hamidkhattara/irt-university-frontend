@@ -10,7 +10,6 @@ const placeholderImage = "https://via.placeholder.com/600x400?text=Image+Not+Ava
 export default function Homepage() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [visiblePosts, setVisiblePosts] = useState(3);
   const [modalData, setModalData] = useState({ 
     image: null, 
     title: "", 
@@ -63,17 +62,15 @@ export default function Homepage() {
     const content = isArabic ? post.content_ar : post.content;
     const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage;
 
-    
-setModalData({
-  image: imageUrl,
-  title,
-  content,
-  video: post.video || "",
-  pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-  pdfId: post.pdfId || "",
-  showPdf: false
-});
-
+    setModalData({
+      image: imageUrl,
+      title,
+      content,
+      video: post.video || "",
+      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
+      pdfId: post.pdfId || "",
+      showPdf: false
+    });
   };
 
   const handleOpenPdf = (e) => {
@@ -146,52 +143,26 @@ setModalData({
     );
   };
 
-  const handleLoadMore = () => {
-    setVisiblePosts((prev) => prev + 3);
-  };
-
-  const handleShowLess = () => {
-    setVisiblePosts(3);
-  };
-
   return (
-<div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-        <Navbar />
+    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
+      <Navbar />
       <HeroSlider />
       
-          <main className="flex-grow">
-
-      <section className="py-12 px-6">
-        <h2 className="text-3xl font-bold text-center mb-6">📰 {t("latestNews")}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {latestPosts.length > 0 ? (
-            latestPosts.slice(0, visiblePosts).map((post) => renderPostCard(post))
-          ) : (
-            <p className="text-center col-span-3 text-gray-500">
-              {t("No posts available yet.")}
-            </p>
-          )}
-        </div>
-        {latestPosts.length > visiblePosts && (
-          <div className="text-center mt-6">
-            <button
-              onClick={handleLoadMore}
-              className="px-6 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
-            >
-              {t("Load More")}
-            </button>
-            {visiblePosts > 3 && (
-              <button
-                onClick={handleShowLess}
-                className="ml-4 px-6 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
-              >
-                {t("Show Less")}
-              </button>
+      <main className="flex-grow">
+        <section className="py-12 px-6">
+          <h2 className="text-3xl font-bold text-center mb-6">📰 {t("latestNews")}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {latestPosts.length > 0 ? (
+              latestPosts.slice(0, 3).map((post) => renderPostCard(post))
+            ) : (
+              <p className="text-center col-span-3 text-gray-500">
+                {t("No posts available yet.")}
+              </p>
             )}
           </div>
-        )}
-      </section>
-    </main>
+        </section>
+      </main>
+
       {modalData.image && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
@@ -234,27 +205,26 @@ setModalData({
                 >
                   {t("Open PDF")}
                 </button>
- {modalData.showPdf && (
-  <div className="mt-4 w-full h-[100vh]">
-    <iframe 
-      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
-      width="100%"
-      height="100%"
-      style={{ border: 'none', minHeight: '500px' }}
-      title="PDF Viewer"
-      className="w-full h-full"
-    />
-    <p className="text-center mt-2">
-      <a 
-        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        {t('Open PDF in new tab')}
-      </a>
-    </p>
-
+                {modalData.showPdf && (
+                  <div className="mt-4 w-full h-[100vh]">
+                    <iframe 
+                      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none', minHeight: '500px' }}
+                      title="PDF Viewer"
+                      className="w-full h-full"
+                    />
+                    <p className="text-center mt-2">
+                      <a 
+                        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t('Open PDF in new tab')}
+                      </a>
+                    </p>
                   </div>
                 )}
               </div>
