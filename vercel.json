@@ -24,29 +24,13 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Cross-Origin-Embedder-Policy",
-          "value": "unsafe-none"
-        },
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin-allow-popups"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "cross-origin"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "ALLOW-FROM https://irt-university-backend.onrender.com"
-        },
-        {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://irt-university-backend.onrender.com https://*.vercel.app; object-src 'self' blob: data:"
+          "value": "frame-ancestors 'self' https://irt-university-backend.onrender.com https://*.vercel.app; default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://irt-university-backend.onrender.com"
         }
       ]
     },
     {
-      "source": "/_next/static/(.*)",
+      "source": "/static/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
