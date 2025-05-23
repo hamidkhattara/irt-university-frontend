@@ -9,14 +9,10 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/files/(.*)",
-      "dest": "https://irt-university-backend.onrender.com/api/files/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/api/files/:path*",
+      "destination": "https://irt-university-backend.onrender.com/api/files/:path*"
     }
   ],
   "headers": [
