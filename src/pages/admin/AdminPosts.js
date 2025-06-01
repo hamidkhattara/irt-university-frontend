@@ -152,4 +152,4 @@ const AdminPosts = () => {
   );
 };
 
-export default AdminPosts;
+export default AdminPosts; 
