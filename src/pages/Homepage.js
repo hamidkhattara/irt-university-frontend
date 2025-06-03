@@ -24,7 +24,8 @@ export default function Homepage() {
 
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
-    const match = url.match(/[?&]v=([^&]+)/);
+    // Updated regex for more robust YouTube ID extraction
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
 
@@ -103,9 +104,14 @@ export default function Homepage() {
       <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
         {post.video ? (
           <img
+            // Corrected YouTube thumbnail URL
             src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`}
             alt={title}
             className="w-full h-64 object-cover cursor-pointer"
+            onError={(e) => {
+                e.target.src = placeholderImage; // Fallback for broken thumbnails
+                e.target.onerror = null;
+            }}
             onClick={() => handleImageClick(post)}
           />
         ) : (
@@ -172,6 +178,7 @@ export default function Homepage() {
             {modalData.video ? (
               <div className="flex justify-center">
                 <iframe
+                  // Corrected YouTube embed URL for iframe
                   src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
@@ -208,7 +215,7 @@ export default function Homepage() {
                 {modalData.showPdf && (
                   <div className="mt-4 w-full h-[100vh]">
                     <iframe 
-                      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
+                      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
                       width="100%"
                       height="100%"
                       style={{ border: 'none', minHeight: '500px' }}
@@ -217,7 +224,7 @@ export default function Homepage() {
                     />
                     <p className="text-center mt-2">
                       <a 
-                        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+                        href={`${baseURL}/api/files/${modalData.pdfId}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
