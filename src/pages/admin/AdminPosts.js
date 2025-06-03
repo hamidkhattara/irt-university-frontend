@@ -3,6 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
 
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
+
 const AdminPosts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +49,12 @@ const AdminPosts = () => {
     }
   };
 
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
+    return match ? match[1] : null;
+  };
+
   return (
     <div>
       <Navbar />
@@ -87,16 +96,33 @@ const AdminPosts = () => {
                           src={`${baseURL}/api/files/${post.imageId}`}
                           alt={post.title}
                           className="h-14 w-14 object-cover mx-auto rounded"
+                          onError={(e) => {
+                            e.target.src = placeholderImage; // Fallback to local placeholder
+                            e.target.onerror = null;
+                          }}
                         />
                       ) : post.video ? (
-                        <a
-                          href={post.video}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          View Video
-                        </a>
+                        // Display thumbnail if YouTube video, otherwise just a link
+                        getYouTubeVideoId(post.video) ? (
+                            <img
+                                src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`} // Standard YouTube thumbnail
+                                alt="Video Thumbnail"
+                                className="h-14 w-14 object-cover mx-auto rounded"
+                                onError={(e) => {
+                                  e.target.src = placeholderImage; // Fallback for broken thumbnails
+                                  e.target.onerror = null;
+                                }}
+                            />
+                        ) : (
+                            <a
+                                href={post.video}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                View Video
+                            </a>
+                        )
                       ) : (
                         'No Media'
                       )}
@@ -152,4 +178,4 @@ const AdminPosts = () => {
   );
 };
 
-export default AdminPosts; 
+export default AdminPosts;

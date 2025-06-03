@@ -5,7 +5,8 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import Footer from "../components/Footer";
 
-const placeholderImage = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
 export default function Homepage() {
   const [latestPosts, setLatestPosts] = useState([]);
@@ -22,9 +23,9 @@ export default function Homepage() {
 
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
-    // Updated regex for more robust YouTube ID extraction
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
@@ -99,17 +100,18 @@ export default function Homepage() {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content;
+    const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
       <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
-        {post.video ? (
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
           <img
-            // Corrected YouTube thumbnail URL
-            src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`}
+            // Corrected YouTube thumbnail URL using correct domain and ID
+            src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
             alt={title}
             className="w-full h-64 object-cover cursor-pointer"
             onError={(e) => {
-                e.target.src = placeholderImage; // Fallback for broken thumbnails
+                e.target.src = placeholderImage; // Fallback to local placeholder
                 e.target.onerror = null;
             }}
             onClick={() => handleImageClick(post)}
@@ -175,13 +177,14 @@ export default function Homepage() {
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            {modalData.video ? (
+            {modalData.video && getYouTubeVideoId(modalData.video) ? ( // Check if YouTube ID exists
               <div className="flex justify-center">
                 <iframe
-                  // Corrected YouTube embed URL for iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}`}
+                  // Corrected YouTube embed URL (embed/ path)
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
                   allowFullScreen
                 />
               </div>

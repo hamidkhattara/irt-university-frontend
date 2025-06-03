@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
 import { useNavigate } from 'react-router-dom';
+
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
 const CreatePost = () => {
   const [postData, setPostData] = useState({
@@ -21,9 +24,27 @@ const CreatePost = () => {
   const navigate = useNavigate();
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // State to hold the URL for the local image preview
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+
+  // Effect to create/revoke object URL for image preview
+  useEffect(() => {
+    if (postData.image) {
+      const url = URL.createObjectURL(postData.image);
+      setImagePreviewUrl(url);
+      // Clean up the object URL when the component unmounts or image changes
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagePreviewUrl(null);
+    }
+  }, [postData.image]);
+
+
   const handleImageChange = (e) => {
     if (postData.video) {
       setMessage('❌ You can only upload an image or a video, not both.');
+      // Clear the input selection to prevent misleading state
+      e.target.value = null; 
       return;
     }
     setPostData({ ...postData, image: e.target.files[0], video: '' });
@@ -31,7 +52,8 @@ const CreatePost = () => {
   };
 
   const handleVideoChange = (e) => {
-    if (postData.image) {
+    // Check both currently selected image AND existing image if applicable (though this is CreatePost)
+    if (postData.image) { 
       setMessage('❌ You can only upload an image or a video, not both.');
       return;
     }
@@ -47,6 +69,13 @@ const CreatePost = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage('');
+
+    // More comprehensive validation for required text fields
+    if (!postData.title || !postData.content || !postData.title_ar || !postData.content_ar || !postData.page || !postData.section) {
+      setMessage('❌ All text fields (titles, content, page, section) are required.');
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!postData.image && !postData.video) {
       setMessage('❌ Please provide either an image or a video.');
@@ -74,7 +103,7 @@ const CreatePost = () => {
 
       if (response.data) {
         setMessage('✅ Post created successfully! Redirecting...');
-        setTimeout(() => navigate('/admin/posts'), 2000);
+        setTimeout(() => navigate('/admin/posts', { state: { fromCreate: true } }), 2000);
       } else {
         throw new Error('Invalid response from server');
       }
@@ -196,20 +225,25 @@ const CreatePost = () => {
             </select>
           )}
 
-          {postData.image && (
+          {/* Conditional rendering for image preview */}
+          {imagePreviewUrl && (
             <div className="mb-2">
-              <p className="text-sm text-gray-600">Selected Image:</p>
+              <p className="text-sm text-gray-600">Selected Image Preview:</p>
               <img 
-                src={URL.createObjectURL(postData.image)} 
+                src={imagePreviewUrl} 
                 alt="Preview" 
                 className="max-h-40 mt-1"
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
+                  e.target.src = placeholderImage; // Fallback to local placeholder
+                  e.target.onerror = null;
                 }}
               />
               <button
                 type="button"
-                onClick={() => setPostData({ ...postData, image: null })}
+                onClick={() => {
+                  setPostData({ ...postData, image: null });
+                  setImagePreviewUrl(null); // Explicitly clear preview URL
+                }}
                 className="mt-2 text-sm text-red-600 hover:text-red-800"
               >
                 Remove Image
@@ -231,7 +265,7 @@ const CreatePost = () => {
             className="w-full border p-2 rounded"
             value={postData.video}
             onChange={handleVideoChange}
-            disabled={!!postData.image}
+            disabled={!!imagePreviewUrl} // Disable if an image is selected for preview
           />
 
           <input

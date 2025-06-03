@@ -4,6 +4,10 @@ import Navbar from "../components/Navbar/Navbar";
 import { useTranslation } from "react-i18next";
 import Footer from "../components/Footer";
 
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
+
+
 const ResearchPage = () => {
   const [publications, setPublications] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -16,8 +20,10 @@ const ResearchPage = () => {
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
 
+  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
-    const match = url.match(/[?&]v=([^&]+)/);
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
 
@@ -27,7 +33,7 @@ const ResearchPage = () => {
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
 
     setModalData({
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image",
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage, // Use local placeholder
       title,
       content,
       video: post.video || "",
@@ -96,23 +102,33 @@ const ResearchPage = () => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
+    const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
       <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
-        {post.video ? (
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
           <div onClick={() => handleImageClick(post)} className="cursor-pointer">
             <img
-              src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`}
+              // Corrected YouTube thumbnail URL
+              src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              onError={(e) => {
+                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.onerror = null;
+              }}
             />
           </div>
         ) : (
           <div onClick={() => handleImageClick(post)} className="cursor-pointer">
             <img
-              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Research+Image"}
+              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage} // Use local placeholder
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              onError={(e) => {
+                e.target.src = placeholderImage;
+                e.target.onerror = null;
+              }}
             />
           </div>
         )}
@@ -284,12 +300,13 @@ const ResearchPage = () => {
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            {modalData.video ? (
+            {modalData.video && getYouTubeVideoId(modalData.video) ? (
               <div className="flex justify-center">
                 <iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}`}
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // Updated to a more standard YouTube embed URL
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
                   allowFullScreen
                 />
               </div>
@@ -318,8 +335,9 @@ const ResearchPage = () => {
                 </button>
                {modalData.showPdf && (
   <div className="mt-4 w-full h-[100vh]">
+    {/* Use baseURL for PDF iframe src as well */}
     <iframe 
-      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
+      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
       width="100%"
       height="100%"
       style={{ border: 'none', minHeight: '500px' }}
@@ -327,8 +345,9 @@ const ResearchPage = () => {
       className="w-full h-full"
     />
     <p className="text-center mt-2">
+      {/* Use baseURL for PDF download link */}
       <a 
-        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+        href={`${baseURL}/api/files/${modalData.pdfId}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:underline"
@@ -336,7 +355,6 @@ const ResearchPage = () => {
         {t('Open PDF in new tab')}
       </a>
     </p>
-
 
                   </div>
                 )}

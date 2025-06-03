@@ -4,6 +4,9 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import Footer from "../components/Footer";
 
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
+
 const NewsEventsPage = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
@@ -20,8 +23,10 @@ const NewsEventsPage = () => {
   const [expandedPosts, setExpandedPosts] = useState({});
   const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
 
+  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
-    const match = url.match(/[?&]v=([^&]+)/);
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
 
@@ -72,7 +77,7 @@ useEffect(() => {
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
 
     setModalData({
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : "https://via.placeholder.com/600x400?text=Post+Image",
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage, // Use local placeholder
       title,
       content,
       video: post.video || "",
@@ -111,24 +116,41 @@ useEffect(() => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
     const safeContent = content || "";
+    const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
   
     return (
       <div key={post._id} className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105">
-        {post.video ? (
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
           <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
             <img
-              src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`}
+              src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
               alt={title}
               className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+              onError={(e) => {
+                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.onerror = null;
+              }}
             />
           </div>
         ) : (
-          post.imageId && (
+          post.imageId ? ( // Render image if imageId exists
             <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
               <img
                 src={`${baseURL}/api/files/${post.imageId}`}
                 alt={title}
                 className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+                onError={(e) => {
+                  e.target.src = placeholderImage;
+                  e.target.onerror = null;
+                }}
+              />
+            </div>
+          ) : ( // Fallback if neither video nor imageId is present
+            <div className="mb-4">
+              <img
+                src={placeholderImage}
+                alt="No Media Available"
+                className="w-full aspect-[3/2] object-cover rounded-md"
               />
             </div>
           )
@@ -207,12 +229,13 @@ useEffect(() => {
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            {modalData.video ? (
+            {modalData.video && getYouTubeVideoId(modalData.video) ? (
               <div className="flex justify-center">
                 <iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}`}
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // Updated to a more standard YouTube embed URL
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
                   allowFullScreen
                 />
               </div>
@@ -241,8 +264,9 @@ useEffect(() => {
                 </button>
                 {modalData.showPdf && (
   <div className="mt-4 w-full h-[100vh]">
+    {/* Use baseURL for PDF iframe src as well */}
     <iframe 
-      src={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}#view=fitH`}
+      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
       width="100%"
       height="100%"
       style={{ border: 'none', minHeight: '500px' }}
@@ -250,8 +274,9 @@ useEffect(() => {
       className="w-full h-full"
     />
     <p className="text-center mt-2">
+      {/* Use baseURL for PDF download link */}
       <a 
-        href={`https://irt-university-backend.onrender.com/api/files/${modalData.pdfId}`}
+        href={`${baseURL}/api/files/${modalData.pdfId}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:underline"
