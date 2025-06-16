@@ -13,6 +13,10 @@
     {
       "source": "/api/files/:path*",
       "destination": "https://irt-university-backend.onrender.com/api/files/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
