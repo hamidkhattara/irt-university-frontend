@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react'; // Added useEffect
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next"; // Added useTranslation for localization
+import { FaUpload, FaYoutube, FaFilePdf } from 'react-icons/fa'; // Added FaYoutube, FaFilePdf for icons
 
 // Standardized placeholder to a local asset for reliability
 const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
 const CreatePost = () => {
+  const { t, i18n } = useTranslation(); // Initialize useTranslation
+  const isArabic = i18n.language === 'ar'; // Check for Arabic language
+
   const [postData, setPostData] = useState({
     title: '',
     content: '',
@@ -42,7 +47,7 @@ const CreatePost = () => {
 
   const handleImageChange = (e) => {
     if (postData.video) {
-      setMessage('❌ You can only upload an image or a video, not both.');
+      setMessage(t('createPost.messages.imageVideoConflict')); // Localized message
       // Clear the input selection to prevent misleading state
       e.target.value = null; 
       return;
@@ -54,7 +59,7 @@ const CreatePost = () => {
   const handleVideoChange = (e) => {
     // Check both currently selected image AND existing image if applicable (though this is CreatePost)
     if (postData.image) { 
-      setMessage('❌ You can only upload an image or a video, not both.');
+      setMessage(t('createPost.messages.imageVideoConflict')); // Localized message
       return;
     }
     setPostData({ ...postData, video: e.target.value, image: null });
@@ -72,13 +77,13 @@ const CreatePost = () => {
 
     // More comprehensive validation for required text fields
     if (!postData.title || !postData.content || !postData.title_ar || !postData.content_ar || !postData.page || !postData.section) {
-      setMessage('❌ All text fields (titles, content, page, section) are required.');
+      setMessage(t('createPost.messages.allFieldsRequired')); // Localized message
       setIsSubmitting(false);
       return;
     }
 
     if (!postData.image && !postData.video) {
-      setMessage('❌ Please provide either an image or a video.');
+      setMessage(t('createPost.messages.imageOrVideoRequired')); // Localized message
       setIsSubmitting(false);
       return;
     }
@@ -102,14 +107,14 @@ const CreatePost = () => {
       });
 
       if (response.data) {
-        setMessage('✅ Post created successfully! Redirecting...');
+        setMessage(t('createPost.messages.success')); // Localized message
         setTimeout(() => navigate('/admin/posts', { state: { fromCreate: true } }), 2000);
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error('Error:', error.response?.data || error.message);
-      setMessage(`❌ Error creating post: ${error.response?.data?.message || error.message}`);
+      setMessage(`${t('createPost.messages.errorPrefix')}: ${error.response?.data?.message || error.message}`); // Localized message
     } finally {
       setIsSubmitting(false);
     }
@@ -121,11 +126,39 @@ const CreatePost = () => {
     return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`);
   };
 
+  // Define page and section options for selects (assuming these values are translated via i18n)
+  const pages = [
+    { value: "news", label: t("createPost.pageOptions.news") },
+    { value: "programs", label: t("createPost.pageOptions.programs") },
+    { value: "research", label: t("createPost.pageOptions.research") },
+  ];
+
+  const sections = {
+    news: [
+      { value: "announcements", label: t("createPost.sectionOptions.news.announcements") },
+      { value: "events", label: t("createPost.sectionOptions.news.events") },
+      { value: "webinars-workshops", label: t("createPost.sectionOptions.news.webinarsWorkshops") },
+      { value: "press-releases", label: t("createPost.sectionOptions.news.pressReleases") },
+    ],
+    programs: [
+      { value: "incubation-programs", label: t("createPost.sectionOptions.programs.incubationPrograms") },
+      { value: "innovation-labs", label: t("createPost.sectionOptions.programs.innovationLabs") },
+      { value: "funding-opportunities", label: t("createPost.sectionOptions.programs.fundingOpportunities") },
+    ],
+    research: [
+      { value: "latest-publications", label: t("createPost.sectionOptions.research.latestPublications") },
+      { value: "ongoing-projects", label: t("createPost.sectionOptions.research.ongoingProjects") },
+      { value: "collaborations-partnerships", label: t("createPost.sectionOptions.research.collaborationsPartnerships") },
+    ],
+  };
+
+  const currentSections = sections[postData.page] || []; // Use postData.page to determine sections
+
   return (
     <div>
       <Navbar />
       <div className="max-w-2xl mx-auto p-4 bg-white shadow-lg rounded-xl">
-        <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("createPost.title")}</h2>
 
         {message && (
           <div className={`mb-3 text-sm ${message.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
@@ -136,7 +169,7 @@ const CreatePost = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Title (English)"
+            placeholder={t("createPost.postTitle")}
             className="w-full border p-2 rounded"
             value={postData.title}
             onChange={(e) => setPostData({ ...postData, title: e.target.value })}
@@ -145,7 +178,7 @@ const CreatePost = () => {
 
           <input
             type="text"
-            placeholder="Title (Arabic)"
+            placeholder={t("createPost.postTitleAr")}
             className="w-full border p-2 rounded text-right"
             value={postData.title_ar}
             onChange={(e) => setPostData({ ...postData, title_ar: e.target.value })}
@@ -153,7 +186,7 @@ const CreatePost = () => {
           />
 
           <textarea
-            placeholder="Content (English)"
+            placeholder={t("createPost.postContent")}
             className="w-full border p-2 rounded"
             rows="6"
             value={postData.content}
@@ -162,7 +195,7 @@ const CreatePost = () => {
           />
 
           <textarea
-            placeholder="Content (Arabic)"
+            placeholder={t("createPost.postContentAr")}
             className="w-full border p-2 rounded text-right"
             rows="6"
             value={postData.content_ar}
@@ -176,59 +209,34 @@ const CreatePost = () => {
             onChange={(e) => setPostData({ ...postData, page: e.target.value, section: '' })}
             required
           >
-            <option value="">Select Page</option>
-            <option value="research">Research & Insights</option>
-            <option value="programs">Programs & Initiatives</option>
-            <option value="news">News & Events</option>
+            <option value="">{t("createPost.selectPage")}</option>
+            {pages.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
           </select>
 
-          {postData.page === 'research' && (
+          {postData.page && currentSections.length > 0 && ( // Only show section select if a page is selected and has sections
             <select
               className="w-full border p-2 rounded"
               value={postData.section}
               onChange={(e) => setPostData({ ...postData, section: e.target.value })}
               required
             >
-              <option value="">Select Section</option>
-              <option value="latest-publications">Latest Research Publications</option>
-              <option value="ongoing-projects">Ongoing Research Projects</option>
-              <option value="collaborations-partnerships">Collaborations & Partnerships</option>
-            </select>
-          )}
-
-          {postData.page === 'programs' && (
-            <select
-              className="w-full border p-2 rounded"
-              value={postData.section}
-              onChange={(e) => setPostData({ ...postData, section: e.target.value })}
-              required
-            >
-              <option value="">Select Section</option>
-              <option value="innovation-labs">Innovation Labs</option>
-              <option value="incubation-programs">Technology Incubation Programs</option>
-              <option value="funding-opportunities">Research Funding Opportunities</option>
-            </select>
-          )}
-
-          {postData.page === 'news' && (
-            <select
-              className="w-full border p-2 rounded"
-              value={postData.section}
-              onChange={(e) => setPostData({ ...postData, section: e.target.value })}
-              required
-            >
-              <option value="">Select Section</option>
-              <option value="webinars-workshops">Webinars and Workshops</option>
-              <option value="announcements">Announcements</option>
-              <option value="press-releases">Press Releases</option>
-              <option value="events">Upcoming and Past Events</option>
+              <option value="">{t("createPost.selectSection")}</option>
+              {currentSections.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
             </select>
           )}
 
           {/* Conditional rendering for image preview */}
           {imagePreviewUrl && (
             <div className="mb-2">
-              <p className="text-sm text-gray-600">Selected Image Preview:</p>
+              <p className="text-sm text-gray-600">{t("createPost.imagePreview")}</p>
               <img 
                 src={imagePreviewUrl} 
                 alt="Preview" 
@@ -246,49 +254,69 @@ const CreatePost = () => {
                 }}
                 className="mt-2 text-sm text-red-600 hover:text-red-800"
               >
-                Remove Image
+                {t("createPost.removeImage")}
               </button>
             </div>
           )}
 
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full border p-2 rounded"
-            onChange={handleImageChange}
-            disabled={!!postData.video}
-          />
+          <div className="flex items-center space-x-4 mb-4"> {/* Added container for upload buttons */}
+            <input
+              type="file"
+              id="imageUpload"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+              disabled={!!postData.video}
+            />
+            <label
+              htmlFor="imageUpload"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 flex items-center"
+            >
+              <FaUpload className="mr-2" /> {t("createPost.uploadImage")}
+            </label>
+            {postData.image && <span className="text-gray-600 text-sm">{postData.image.name}</span>}
+          </div>
 
           <input
             type="text"
-            placeholder="YouTube Video Link"
+            placeholder={t("createPost.youtubeVideoUrlPlaceholder")} // Localized placeholder
             className="w-full border p-2 rounded"
             value={postData.video}
             onChange={handleVideoChange}
-            disabled={!!imagePreviewUrl} // Disable if an image is selected for preview
+            disabled={!!postData.image} // Disable if an image is selected for preview (removed imagePreviewUrl check for consistency)
           />
 
-          <input
-            type="file"
-            accept="application/pdf"
-            className="w-full border p-2 rounded"
-            onChange={handlePdfChange}
-          />
+          <div className="flex items-center space-x-4">
+            <input
+              type="file"
+              id="pdfUpload"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handlePdfChange}
+            />
+            <label
+              htmlFor="pdfUpload"
+              className="px-4 py-2 bg-purple-500 text-white rounded-lg cursor-pointer hover:bg-purple-600 flex items-center"
+            >
+              <FaUpload className="mr-2" /> {t("createPost.uploadPdf")}
+            </label>
+            {postData.pdf && <span className="text-gray-600 text-sm">{postData.pdf.name}</span>}
+          </div>
 
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Submit Post'}
+            {isSubmitting ? t('createPost.creating') : t('createPost.submitPost')}
           </button>
         </form>
 
         <div className="mt-8">
-          <h3 className="text-xl font-bold mb-4">Preview</h3>
+          <h3 className="text-xl font-bold mb-4">{t("createPost.preview")}</h3>
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold">English Content Preview:</h4>
+              <h4 className="font-semibold">{t("createPost.englishContentPreview")}:</h4>
               <div
                 className="border p-4 rounded"
                 dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content) }}
@@ -296,7 +324,7 @@ const CreatePost = () => {
             </div>
 
             <div>
-              <h4 className="font-semibold">Arabic Content Preview:</h4>
+              <h4 className="font-semibold">{t("createPost.arabicContentPreview")}:</h4>
               <div
                 className="border p-4 rounded text-right"
                 dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content_ar) }}
