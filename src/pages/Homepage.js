@@ -1,301 +1,249 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-import HeroSlider from "../components/HeroSlider/HeroSlider";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
-import NavbarAR from "../components/Navbar/NavbarAR";
-import Footer from "../components/Footer";
+import HeroSlider from "../components/HeroSlider/HeroSlider";
+import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { FaExternalLinkAlt, FaFilePdf } from "react-icons/fa";
+import Footer from "../components/Footer";
 
-const baseURL = "https://irt-university-backend.onrender.com";
-const placeholderImage = "/images/placeholder-image.png";
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
-const getYouTubeVideoId = (url) => {
-  if (!url) return null;
-  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
-  return match ? match[1] : null;
-};
-
-const Homepage = () => {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
-  const [news, setNews] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [research, setResearch] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalData, setModalData] = useState({
-    title: "",
-    content: "",
-    image: "",
-    video: "",
-    pdfUrl: "",
-    showPdf: false
+export default function Homepage() {
+  const [latestPosts, setLatestPosts] = useState([]);
+  const [expandedPosts, setExpandedPosts] = useState({});
+  const [modalData, setModalData] = useState({ 
+    image: null, 
+    title: "", 
+    content: "", 
+    video: "", 
+    pdfUrl: "", 
+    showPdf: false 
   });
-  const [showModal, setShowModal] = useState(false);
+  const { i18n, t } = useTranslation();
+
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+  // More robust getYouTubeVideoId function
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
+    return match ? match[1] : null;
+  };
 
   useEffect(() => {
-    const fetchContent = async () => {
+    const fetchPosts = async () => {
       try {
-        const newsResponse = await axios.get(`${baseURL}/api/posts?page=news`);
-        setNews(newsResponse.data);
-
-        const programsResponse = await axios.get(`${baseURL}/api/posts?page=programs`);
-        setPrograms(programsResponse.data);
-
-        const researchResponse = await axios.get(`${baseURL}/api/posts?page=research`);
-        setResearch(researchResponse.data);
-
-      } catch (error) {
-        console.error("Error fetching homepage content:", error);
-        setError(error);
-      } finally {
-        setLoading(false);
+        const response = await axios.get(`${baseURL}/api/posts`);
+        const posts = response.data;
+        const sorted = posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setLatestPosts(sorted);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
       }
     };
 
-    fetchContent();
-  }, []);
+    fetchPosts();
+  }, [baseURL]);
 
-  const openModal = (post) => {
-    const youtubeId = getYouTubeVideoId(post.video);
-    setModalData({
-      title: isArabic ? post.title_ar : post.title,
-      content: isArabic ? post.content_ar : post.content,
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
-      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // Corrected YouTube embed URL
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null,
-      showPdf: post.pdfId && fileExtension(post.pdfId) === 'pdf' // Assuming fileExtension helper exists or logic is applied
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(i18n.language === "ar" ? "ar-DZ" : undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-    setShowModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
+  const toggleReadMore = (postId) => {
+    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleImageClick = (post) => {
+    const isArabic = i18n.language === "ar";
+    const title = isArabic ? post.title_ar : post.title;
+    const content = isArabic ? post.content_ar : post.content;
+    const imageUrl = post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage;
+
     setModalData({
-      title: "",
-      content: "",
-      image: "",
-      video: "",
-      pdfUrl: "",
+      image: imageUrl,
+      title,
+      content,
+      video: post.video || "",
+      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
+      pdfId: post.pdfId || "",
       showPdf: false
     });
   };
 
-  // Helper to get file extension (assuming this exists or can be added)
-  const fileExtension = (filename) => {
-    return filename.split('.').pop();
+  const handleOpenPdf = (e) => {
+    e.stopPropagation();
+    setModalData((prev) => ({ ...prev, showPdf: true }));
   };
 
-  if (loading) {
+  const formatContent = (text) => {
+    if (!text) return "";
+    return text
+      .split("\n")
+      .map((line, index) => {
+        if (line.trim().startsWith("•")) {
+          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="text-align: left;">${line.trim()}</p>`;
+        }
+      })
+      .join("");
+  };
+
+  const renderPostCard = (post) => {
+    const isArabic = i18n.language === "ar";
+    const title = isArabic ? post.title_ar : post.title;
+    const content = isArabic ? post.content_ar : post.content;
+    const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
+
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="loader"></div>
+      <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
+          <img
+            // Corrected YouTube thumbnail URL using correct domain and ID
+            src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
+            alt={title}
+            className="w-full h-64 object-cover cursor-pointer"
+            onError={(e) => {
+                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.onerror = null;
+            }}
+            onClick={() => handleImageClick(post)}
+          />
+        ) : (
+          <img
+            src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
+            alt={title}
+            className="w-full h-64 object-cover cursor-pointer"
+            onError={(e) => {
+              e.target.src = placeholderImage;
+              e.target.onerror = null;
+            }}
+            onClick={() => handleImageClick(post)}
+          />
+        )}
+        <div className="p-6">
+          <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
+          <p className="text-sm text-gray-500 mb-2">{formatDate(post.createdAt)}</p>
+          <div className="text-gray-700 text-base mb-2">
+            {expandedPosts[post._id] || content.length <= 100 ? (
+              <div dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: formatContent(content.slice(0, 100)) + "..." }} />
+            )}
+          </div>
+          {content.length > 100 && (
+            <button
+              onClick={() => toggleReadMore(post._id)}
+              className="text-blue-700 hover:underline text-sm font-medium"
+            >
+              {expandedPosts[post._id] ? t("Show Less") : t("Read More")}
+            </button>
+          )}
+        </div>
       </div>
     );
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 mt-10">Error: {error.message}</div>;
-  }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {isArabic ? <NavbarAR /> : <Navbar />}
+    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
+      <Navbar />
+      <HeroSlider />
+      
       <main className="flex-grow">
-        <HeroSlider />
-        <section className="py-12 bg-gray-100">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-              {t("homepage.latestNews")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {news.slice(0, 3).map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
-                  onClick={() => openModal(post)}
-                >
-                  <img
-                    src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : (getYouTubeVideoId(post.video) ? `https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg` : placeholderImage)} 
-                    alt={isArabic ? post.title_ar : post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 truncate">
-                      {isArabic ? post.title_ar : post.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {isArabic ? post.content_ar : post.content}
-                    </p>
-                    <span className="text-blue-600 text-sm font-medium hover:underline">
-                      {t("homepage.readMore")}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {news.length > 0 && (
-              <div className="text-center mt-10">
-                <Link
-                  to="/news-events"
-                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
-                >
-                  {t("homepage.viewAllNews")}
-                </Link>
-              </div>
+        <section className="py-12 px-6">
+          <h2 className="text-3xl font-bold text-center mb-6">📰 {t("latestNews")}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {latestPosts.length > 0 ? (
+              latestPosts.slice(0, 3).map((post) => renderPostCard(post))
+            ) : (
+              <p className="text-center col-span-3 text-gray-500">
+                {t("No posts available yet.")}
+              </p>
             )}
           </div>
         </section>
+      </main>
 
-        {/* Programs Section */}
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-              {t("homepage.ourPrograms")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {programs.slice(0, 3).map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-gray-100 rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
-                  onClick={() => openModal(post)}
-                >
-                  <img
-                    src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : (getYouTubeVideoId(post.video) ? `https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg` : placeholderImage)} 
-                    alt={isArabic ? post.title_ar : post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 truncate">
-                      {isArabic ? post.title_ar : post.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {isArabic ? post.content_ar : post.content}
-                    </p>
-                    <span className="text-blue-600 text-sm font-medium hover:underline">
-                      {t("homepage.learnMore")}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {programs.length > 0 && (
-              <div className="text-center mt-10">
-                <Link
-                  to="/programs-initiatives"
-                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
-                >
-                  {t("homepage.viewAllPrograms")}
-                </Link>
+      {modalData.image && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
+        >
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+            {modalData.video && getYouTubeVideoId(modalData.video) ? ( // Check if YouTube ID exists
+              <div className="flex justify-center">
+                <iframe
+                  // Corrected YouTube embed URL (embed/ path)
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
+                  title="YouTube Video"
+                  className="w-[800px] h-[450px] rounded-lg mb-4"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
+                  allowFullScreen
+                />
               </div>
-            )}
-          </div>
-        </section>
-
-        {/* Research Section */}
-        <section className="py-12 bg-gray-100">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-              {t("homepage.ourResearch")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {research.slice(0, 3).map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
-                  onClick={() => openModal(post)}
-                >
-                  <img
-                    src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : (getYouTubeVideoId(post.video) ? `https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg` : placeholderImage)} 
-                    alt={isArabic ? post.title_ar : post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 truncate">
-                      {isArabic ? post.title_ar : post.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {isArabic ? post.content_ar : post.content}
-                    </p>
-                    <span className="text-blue-600 text-sm font-medium hover:underline">
-                      {t("homepage.explore")}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {research.length > 0 && (
-              <div className="text-center mt-10">
-                <Link
-                  to="/research"
-                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
-                >
-                  {t("homepage.viewAllResearch")}
-                </Link>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-              <button
-                className="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-                onClick={closeModal}
-              >
-                &times;
-              </button>
-              {modalData.image && !modalData.video && (
+            ) : (
+              <div className="flex items-center justify-center">
                 <img
                   src={modalData.image}
-                  alt={modalData.title}
-                  className="w-full max-h-80 object-cover rounded-t-lg"
+                  alt="Enlarged"
+                  className="max-w-full max-h-[80vh] rounded-lg mb-4"
+                  onError={(e) => {
+                    e.target.src = placeholderImage;
+                    e.target.onerror = null;
+                  }}
                 />
-              )}
-              {modalData.video && (
-                <div className="w-full aspect-video">
-                  <iframe
-                    src={modalData.video}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full rounded-t-lg"
-                  ></iframe>
-                </div>
-              )}
-              <div className="p-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {modalData.title}
-                </h2>
-                <p className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
-                  {modalData.content}
-                </p>
-                {modalData.pdfUrl && (
-                  <div className="mt-4">
-                    <a
-                      href={modalData.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <FaFilePdf className="mr-2 text-red-600" />
-                      {t("viewPdf")} <FaExternalLinkAlt className="ml-2 text-sm" />
-                    </a>
+              </div>
+            )}
+            <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">{modalData.title}</h2>
+            <div className="text-center">
+              <div className="inline-block text-left">
+                <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
+              </div>
+            </div>
+            {modalData.pdfUrl && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleOpenPdf}
+                  className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+                >
+                  {t("Open PDF")}
+                </button>
+                {modalData.showPdf && (
+                  <div className="mt-4 w-full h-[100vh]">
+                    <iframe 
+                      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none', minHeight: '500px' }}
+                      title="PDF Viewer"
+                      className="w-full h-full"
+                    />
+                    <p className="text-center mt-2">
+                      <a 
+                        href={`${baseURL}/api/files/${modalData.pdfId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t('Open PDF in new tab')}
+                      </a>
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </main>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
-};
-
-export default Homepage;
+}
