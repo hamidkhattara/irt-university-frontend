@@ -1,339 +1,179 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
-import { Link, useLocation } from "react-router-dom";
-import Navbar from "../../components/Navbar/Navbar";
-import NavbarAR from "../../components/Navbar/NavbarAR";
-import Footer from "../../components/Footer";
-import { useTranslation } from "react-i18next";
-import { AuthContext } from "../../AuthContext"; // Assuming AuthContext provides user/token
-import { FaEdit, FaTrash, FaPlus, FaExternalLinkAlt, FaFilePdf } from "react-icons/fa";
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import Navbar from '../../components/Navbar/Navbar';
 
-const baseURL = "https://irt-university-backend.onrender.com";
-const placeholderImage = "/images/placeholder-image.png";
-
-const getYouTubeVideoId = (url) => {
-  if (!url) return null;
-  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
-  return match ? match[1] : null;
-};
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
 const AdminPosts = () => {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
-  const { user } = useContext(AuthContext); // Get user from context
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const location = useLocation();
-  const [activePage, setActivePage] = useState("");
-  const [activeSection, setActiveSection] = useState("");
-  const [modalData, setModalData] = useState({
-    title: "",
-    content: "",
-    image: "",
-    video: "",
-    pdfUrl: "",
-    showPdf: false
-  });
-  const [showModal, setShowModal] = useState(false);
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        setLoading(true);
-        const queryParams = new URLSearchParams(location.search);
-        const page = queryParams.get("page") || "news"; // Default to 'news'
-        const section = queryParams.get("section") || ""; // Section can be empty
-        setActivePage(page);
-        setActiveSection(section);
-
-        let url = `${baseURL}/api/posts?page=${page}`;
-        if (section) {
-          url += `&section=${section}`;
-        }
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-        setPosts(response.data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        setError(error);
+        const res = await axios.get(`${baseURL}/api/posts`);
+        setPosts(res.data);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+        setError('Failed to load posts.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (user && user.token) {
-      fetchPosts();
-    } else {
-      setError(new Error("Unauthorized: No user token found."));
-      setLoading(false);
+    fetchPosts();
+  }, [location.state?.fromCreate, baseURL]);
+
+  useEffect(() => {
+    if (location.state?.fromCreate) {
+      window.history.replaceState({}, document.title);
     }
-  }, [location.search, user]);
+  }, [location.state?.fromCreate]);
 
   const handleDelete = async (id) => {
-    if (window.confirm(t("adminPosts.confirmDelete"))) {
-      try {
-        await axios.delete(`${baseURL}/api/posts/${id}`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-        setPosts(posts.filter((post) => post._id !== id));
-      } catch (error) {
-        console.error("Error deleting post:", error);
-        setError(error);
-      }
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${baseURL}/api/posts/${id}`);
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      setError('Error deleting post.');
     }
   };
 
-  const openModal = (post) => {
-    const youtubeId = getYouTubeVideoId(post.video);
-    setModalData({
-      title: isArabic ? post.title_ar : post.title,
-      content: isArabic ? post.content_ar : post.content,
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
-      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // MODIFIED: Corrected YouTube embed URL
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null,
-      showPdf: post.pdfId && fileExtension(post.pdfId) === 'pdf'
-    });
-    setShowModal(true);
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
+    return match ? match[1] : null;
   };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setModalData({
-      title: "",
-      content: "",
-      image: "",
-      video: "",
-      pdfUrl: "",
-      showPdf: false
-    });
-  };
-
-  const fileExtension = (filename) => {
-    return filename.split('.').pop();
-  };
-
-  const pageOptions = [
-    { key: "news", text: "adminPosts.pages.news" },
-    { key: "programs", text: "adminPosts.pages.programs" },
-    { key: "research", text: "adminPosts.pages.research" },
-  ];
-
-  const getSectionOptions = (page) => {
-    switch (page) {
-      case "news":
-        return [
-          { key: "announcements", text: "adminPosts.sections.announcements" },
-          { key: "events", text: "adminPosts.sections.events" },
-          { key: "webinars-workshops", text: "adminPosts.sections.webinarsWorkshops" },
-          { key: "press-releases", text: "adminPosts.sections.pressReleases" },
-        ];
-      case "programs":
-        return [
-          { key: "incubation-programs", text: "adminPosts.sections.incubationPrograms" },
-          { key: "innovation-labs", text: "adminPosts.sections.innovationLabs" },
-          { key: "funding-opportunities", text: "adminPosts.sections.fundingOpportunities" },
-        ];
-      case "research":
-        return [
-          { key: "latest-publications", text: "adminPosts.sections.latestPublications" },
-          { key: "ongoing-projects", text: "adminPosts.sections.ongoingProjects" },
-          { key: "collaborations-partnerships", text: "adminPosts.sections.collaborationsPartnerships" },
-        ];
-      default:
-        return [];
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="loader"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 mt-10">Error: {error.message}</div>;
-  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {isArabic ? <NavbarAR /> : <Navbar />}
-      <main className="flex-grow py-12 bg-gray-100 min-h-[calc(100vh-160px)]">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
-            {t("adminPosts.title")}
-          </h1>
+    <div>
+      <Navbar />
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">All Posts</h2>
+          <Link
+            to="/admin/create"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            + Create New Post
+          </Link>
+        </div>
 
-          {/* Page Selection */}
-          <div className="flex justify-center mb-8">
-            <nav className="flex space-x-4">
-              {pageOptions.map((option) => (
-                <Link
-                  key={option.key}
-                  to={`/admin/posts?page=${option.key}`}
-                  className={`px-4 py-2 rounded-lg text-lg font-medium transition duration-300 ${activePage === option.key
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-gray-200"
-                    }`}
-                >
-                  {t(option.text)}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Section Selection (if sections exist for activePage) */}
-          {getSectionOptions(activePage).length > 0 && (
-            <div className="flex justify-center mb-8">
-              <nav className="flex space-x-4 text-sm md:text-base flex-wrap justify-center">
-                <Link
-                  to={`/admin/posts?page=${activePage}`}
-                  className={`px-3 py-2 rounded-lg font-medium transition duration-300 ${activeSection === ""
-                      ? "bg-gray-800 text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-gray-200"
-                    }`}
-                >
-                  {t("adminPosts.allSections")}
-                </Link>
-                {getSectionOptions(activePage).map((option) => (
-                  <Link
-                    key={option.key}
-                    to={`/admin/posts?page=${activePage}&section=${option.key}`}
-                    className={`px-3 py-2 rounded-lg font-medium transition duration-300 ${activeSection === option.key
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-white text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    {t(option.text)}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          )}
-
-
-          <div className="text-right mb-6">
-            <Link
-              to="/admin/create-post"
-              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 flex items-center justify-center ml-auto w-fit"
-            >
-              <FaPlus className="mr-2" /> {t("adminPosts.createPost")}
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <div key={post._id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <img
-                    src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : (getYouTubeVideoId(post.video) ? `https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg` : placeholderImage)} 
-                    alt={isArabic ? post.title_ar : post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2 truncate">
-                      {isArabic ? post.title_ar : post.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {isArabic ? post.content_ar : post.content}
-                    </p>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => openModal(post)}
-                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                        title={t("adminPosts.view")}
-                      >
-                        <FaExternalLinkAlt />
-                      </button>
+        {error && <p className="text-red-600 mb-3">{error}</p>}
+        {loading ? (
+          <p>Loading posts...</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-collapse shadow-sm rounded-lg">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Title</th>
+                  <th className="px-4 py-2 border">Image/Video</th>
+                  <th className="px-4 py-2 border">PDF</th>
+                  <th className="px-4 py-2 border">Page</th>
+                  <th className="px-4 py-2 border">Section</th>
+                  <th className="px-4 py-2 border">Created At</th>
+                  <th className="px-4 py-2 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {posts.map((post) => (
+                  <tr key={post._id} className="text-center">
+                    <td className="px-4 py-2 border">{post.title}</td>
+                    <td className="px-4 py-2 border">
+                      {post.imageId ? (
+                        <img
+                          src={`${baseURL}/api/files/${post.imageId}`}
+                          alt={post.title}
+                          className="h-14 w-14 object-cover mx-auto rounded"
+                          onError={(e) => {
+                            e.target.src = placeholderImage; // Fallback to local placeholder
+                            e.target.onerror = null;
+                          }}
+                        />
+                      ) : post.video ? (
+                        // Display thumbnail if YouTube video, otherwise just a link
+                        getYouTubeVideoId(post.video) ? (
+                            <img
+                                src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`} // Standard YouTube thumbnail
+                                alt="Video Thumbnail"
+                                className="h-14 w-14 object-cover mx-auto rounded"
+                                onError={(e) => {
+                                  e.target.src = placeholderImage; // Fallback for broken thumbnails
+                                  e.target.onerror = null;
+                                }}
+                            />
+                        ) : (
+                            <a
+                                href={post.video}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                View Video
+                            </a>
+                        )
+                      ) : (
+                        'No Media'
+                      )}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {post.pdfId ? (
+                        <a
+                          href={`${baseURL}/api/files/${post.pdfId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          View PDF
+                        </a>
+                      ) : (
+                        'No PDF'
+                      )}
+                    </td>
+                    <td className="px-4 py-2 border">{post.page}</td>
+                    <td className="px-4 py-2 border">{post.section}</td>
+                    <td className="px-4 py-2 border">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2 border space-x-2">
                       <Link
-                        to={`/admin/edit-post/${post._id}?page=${activePage}&section=${activeSection}`}
-                        className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50"
-                        title={t("adminPosts.edit")}
+                        to={`/admin/edit/${post._id}`}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                       >
-                        <FaEdit />
+                        Edit
                       </Link>
                       <button
                         onClick={() => handleDelete(post._id)}
-                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-                        title={t("adminPosts.delete")}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                       >
-                        <FaTrash />
+                        Delete
                       </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-600 text-lg">
-                {t("adminPosts.noContent")}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-              <button
-                className="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-                onClick={closeModal}
-              >
-                ×
-              </button>
-              {modalData.image && !modalData.video && (
-                <img
-                  src={modalData.image}
-                  alt={modalData.title}
-                  className="w-full max-h-80 object-cover rounded-t-lg"
-                />
-              )}
-              {modalData.video && (
-                <div className="w-full aspect-video">
-                  <iframe
-                    src={modalData.video}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full rounded-t-lg"
-                  ></iframe>
-                </div>
-              )}
-              <div className="p-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {modalData.title}
-                </h2>
-                <p className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
-                  {modalData.content}
-                </p>
-                {modalData.pdfUrl && (
-                  <div className="mt-4">
-                    <a
-                      href={modalData.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <FaFilePdf className="mr-2 text-red-600" />
-                      {t("viewPdf")} <FaExternalLinkAlt className="ml-2 text-sm" />
-                    </a>
-                  </div>
+                    </td>
+                  </tr>
+                ))}
+                {posts.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan="7" className="text-gray-500 p-4">
+                      No posts found.
+                    </td>
+                  </tr>
                 )}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         )}
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
