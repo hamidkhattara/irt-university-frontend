@@ -31,13 +31,12 @@ const ResearchPage = () => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
-    const youtubeId = post.video ? getYouTubeVideoId(post.video) : null; // Get video ID here
 
     setModalData({
       image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage, // Use local placeholder
       title,
       content,
-      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // MODIFIED: Corrected YouTube embed URL
+      video: post.video || "",
       pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
       pdfId: post.pdfId || "", // Add this line
       showPdf: false
@@ -111,7 +110,7 @@ const ResearchPage = () => {
           <div onClick={() => handleImageClick(post)} className="cursor-pointer">
             <img
               // Corrected YouTube thumbnail URL
-              src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`} // MODIFIED: Updated to a more standard YouTube thumbnail host
+              src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
@@ -304,7 +303,7 @@ const ResearchPage = () => {
             {modalData.video && getYouTubeVideoId(modalData.video) ? (
               <div className="flex justify-center">
                 <iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // MODIFIED: Updated to a more standard YouTube embed URL
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // Updated to a more standard YouTube embed URL
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions

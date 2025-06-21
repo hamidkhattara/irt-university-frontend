@@ -1,222 +1,298 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
-import NavbarAR from "../components/Navbar/NavbarAR";
-import Footer from "../components/Footer";
+import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "react-router-dom";
-import { FaExternalLinkAlt, FaFilePdf } from "react-icons/fa";
+import Footer from "../components/Footer";
 
-const baseURL = "https://irt-university-backend.onrender.com";
-const placeholderImage = "/images/placeholder-image.png";
-
-const getYouTubeVideoId = (url) => {
-  if (!url) return null;
-  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
-  return match ? match[1] : null;
-};
+// Standardized placeholder to a local asset for reliability
+const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
 
 const ProgramsInitiativesPage = () => {
+  const [innovationLabs, setInnovationLabs] = useState([]);
+  const [incubationPrograms, setIncubationPrograms] = useState([]);
+  const [fundingOpportunities, setFundingOpportunities] = useState([]);
+  const [labsVisible, setLabsVisible] = useState(3);
+  const [incubVisible, setIncubVisible] = useState(3);
+  const [fundingVisible, setFundingVisible] = useState(3);
+  const [expandedPosts, setExpandedPosts] = useState({});
+  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const location = useLocation();
-  const [activeSection, setActiveSection] = useState("");
-  const [modalData, setModalData] = useState({
-    title: "",
-    content: "",
-    image: "",
-    video: "",
-    pdfUrl: "",
-    showPdf: false
-  });
-  const [showModal, setShowModal] = useState(false);
+
+  // More robust getYouTubeVideoId function
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
+    return match ? match[1] : null;
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        const queryParams = new URLSearchParams(location.search);
-        const section = queryParams.get("section") || "incubation-programs"; // Default to 'incubation-programs'
-        setActiveSection(section);
+        const [labsRes, incubRes, fundingRes] = await Promise.all([
+        axios.get(`${baseURL}/api/posts?page=programs&section=innovation-labs`),
+        axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
+        axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`)
 
-        const response = await axios.get(`${baseURL}/api/posts?page=programs&section=${section}`);
-        setPosts(response.data);
+        ]); 
+        setInnovationLabs(labsRes.data);
+        setIncubationPrograms(incubRes.data);
+        setFundingOpportunities(fundingRes.data);
       } catch (error) {
         console.error("Error fetching programs & initiatives content:", error);
-        setError(error);
-      } finally {
-        setLoading(false);
       }
     };
+    fetchData();
+  }, [baseURL]);
 
-    fetchPosts();
-  }, [location.search]);
-
-  const openModal = (post) => {
-    const youtubeId = getYouTubeVideoId(post.video);
-    setModalData({
-      title: isArabic ? post.title_ar : post.title,
-      content: isArabic ? post.content_ar : post.content,
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
-      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // MODIFIED: Corrected YouTube embed URL
-      pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null,
-      showPdf: post.pdfId && fileExtension(post.pdfId) === 'pdf'
-    });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setModalData({
-      title: "",
-      content: "",
-      image: "",
-      video: "",
-      pdfUrl: "",
-      showPdf: false
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(i18n.language === "ar" ? "ar-DZ" : undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
-  const fileExtension = (filename) => {
-    return filename.split('.').pop();
+const handleImageClick = (item) => {
+  const isArabic = i18n.language === "ar";
+  const title = isArabic ? item.title_ar : item.title;
+  const content = isArabic ? item.content_ar : item.content;
+
+  setModalData({
+    image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage, // Use local placeholder
+    title,
+    content,
+    video: item.video || "",
+    pdfUrl: item.pdfId ? `${baseURL}/api/files/${item.pdfId}` : "",
+    pdfId: item.pdfId || "",
+    showPdf: false
+  });
+};
+
+  const handleOpenPdf = (e) => {
+    e.stopPropagation();
+    setModalData((prev) => ({ ...prev, showPdf: true }));
   };
 
-  const sections = [
-    { key: "incubation-programs", text: "programsInitiatives.incubationPrograms" },
-    { key: "innovation-labs", text: "programsInitiatives.innovationLabs" },
-    { key: "funding-opportunities", text: "programsInitiatives.fundingOpportunities" },
-  ];
+  const toggleReadMore = (postId) => {
+    setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
 
-  if (loading) {
+  const formatContent = (text) => {
+    if (!text) return "";
+    return text
+      .split("\n")
+      .map((line, index) => {
+        if (line.trim().startsWith("•")) {
+          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="text-align: left;">${line.trim()}</p>`;
+        }
+      })
+      .join("");
+  };
+
+  const renderCard = (item) => {
+    const isArabic = i18n.language === "ar";
+    const title = isArabic ? item.title_ar : item.title;
+    const content = isArabic ? item.content_ar : item.content;
+    const safeContent = content || "";
+    const youtubeId = item.video ? getYouTubeVideoId(item.video) : null;
+  
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="loader"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 mt-10">Error: {error.message}</div>;
-  }
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      {isArabic ? <NavbarAR /> : <Navbar />}
-      <main className="flex-grow">
-        <section className="py-12 bg-gray-100 min-h-[calc(100vh-160px)]">
-          <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
-              {t("programsInitiatives.title")}
-            </h1>
-            <div className="flex justify-center mb-8">
-              <nav className="flex space-x-4">
-                {sections.map((section) => (
-                  <Link
-                    key={section.key}
-                    to={`/programs-initiatives?section=${section.key}`}
-                    className={`px-4 py-2 rounded-lg text-lg font-medium transition duration-300 ${activeSection === section.key
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-white text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    {t(section.text)}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <div
-                    key={post._id}
-                    className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
-                    onClick={() => openModal(post)}
-                  >
-                    <img
-                      src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : (getYouTubeVideoId(post.video) ? `https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg` : placeholderImage)} 
-                      alt={isArabic ? post.title_ar : post.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2 truncate">
-                        {isArabic ? post.title_ar : post.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {isArabic ? post.content_ar : post.content}
-                      </p>
-                      <span className="text-blue-600 text-sm font-medium hover:underline">
-                        {t("programsInitiatives.learnMore")}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center text-gray-600 text-lg">
-                  {t("programsInitiatives.noContent")}
-                </div>
-              )}
-            </div>
+      <div key={item._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
+        {item.video && youtubeId ? ( // Check if YouTube ID exists
+          <div onClick={() => handleImageClick(item)} className="cursor-pointer">
+            <img
+              src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
+              alt={title}
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              onError={(e) => {
+                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.onerror = null;
+              }}
+            />
           </div>
-        </section>
-
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-              <button
-                className="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-                onClick={closeModal}
-              >
-                ×
-              </button>
-              {modalData.image && !modalData.video && (
-                <img
-                  src={modalData.image}
-                  alt={modalData.title}
-                  className="w-full max-h-80 object-cover rounded-t-lg"
-                />
-              )}
-              {modalData.video && (
-                <div className="w-full aspect-video">
-                  <iframe
-                    src={modalData.video}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full rounded-t-lg"
-                  ></iframe>
-                </div>
-              )}
-              <div className="p-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {modalData.title}
-                </h2>
-                <p className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
-                  {modalData.content}
-                </p>
-                {modalData.pdfUrl && (
-                  <div className="mt-4">
-                    <a
-                      href={modalData.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <FaFilePdf className="mr-2 text-red-600" />
-                      {t("viewPdf")} <FaExternalLinkAlt className="ml-2 text-sm" />
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
+        ) : (
+          <div onClick={() => handleImageClick(item)} className="cursor-pointer">
+            <img
+              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage} // Use local placeholder
+              alt={title}
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              onError={(e) => {
+                e.target.src = placeholderImage;
+                e.target.onerror = null;
+              }}
+            />
           </div>
         )}
-      </main>
+        <div className="p-6">
+          <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
+          <p className="text-sm text-gray-500 mb-2">{formatDate(item.createdAt)}</p>
+          <div className="text-gray-700 text-base">
+            {expandedPosts[item._id] || safeContent.length <= 100 ? (
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent) }} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100)) + "..." }} />
+            )}
+          </div>
+          {safeContent.length > 100 && (
+            <button
+              onClick={() => toggleReadMore(item._id)}
+              className="text-blue-700 hover:underline text-sm font-medium"
+            >
+              {expandedPosts[item._id] ? t("Show Less") : t("Read More")}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderSection = (titleKey, data, visibleCount, setVisibleCount, fallbackMessageKey, sectionId) => (
+    <section id={sectionId} className="container mx-auto px-6 py-16">
+      <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t(titleKey)}</h2>
+      {data.length === 0 ? (
+        <p className="text-center text-gray-600 mt-6">{t(fallbackMessageKey)}</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {data.slice(0, visibleCount).map(renderCard)}
+          </div>
+          {data.length > visibleCount && (
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 3)}
+                className="px-6 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+              >
+                {t("Load More")}
+              </button>
+              {visibleCount > 3 && (
+                <button
+                  onClick={() => setVisibleCount(3)}
+                  className="ml-4 px-6 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
+                >
+                  {t("Show Less")}
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
+
+  return (
+    <div className="bg-white text-gray-900 min-h-screen">
+      <Navbar />
+
+      <section className="bg-blue-900 text-white py-24 text-center">
+        <h1 className="text-5xl font-extrabold">{t("Programs & Initiatives")}</h1>
+        <p className="mt-6 text-xl max-w-2xl mx-auto">
+          {t("Empowering students and communities through dynamic programs and strategic initiatives.")}
+        </p>
+      </section>
+
+      {renderSection(
+        "Innovation Labs",
+        innovationLabs,
+        labsVisible,
+        setLabsVisible,
+        "No Innovation Labs available at the moment.",
+        "innovation-labs"
+      )}
+
+      <div className="bg-gray-100 w-full">
+        {renderSection(
+          "Technology Incubation Programs",
+          incubationPrograms,
+          incubVisible,
+          setIncubVisible,
+          "No Technology Incubation Programs available at the moment.",
+          "technology-incubation"
+        )}
+      </div>
+
+      {renderSection(
+        "Research Funding Opportunities",
+        fundingOpportunities,
+        fundingVisible,
+        setFundingVisible,
+        "No Research Funding Opportunities available at the moment.",
+        "research-funding"
+      )}
+
+      {modalData.image && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
+        >
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+            {modalData.video && getYouTubeVideoId(modalData.video) ? (
+              <div className="flex justify-center">
+                <iframe
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // Updated to a more standard YouTube embed URL
+                  title="YouTube Video"
+                  className="w-[800px] h-[450px] rounded-lg mb-4"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <img
+                  src={modalData.image}
+                  alt="Enlarged"
+                  className="max-w-full max-h-[80vh] rounded-lg mb-4"
+                />
+              </div>
+            )}
+            <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">{modalData.title}</h2>
+            <div className="text-center">
+              <div className="inline-block text-left">
+                <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
+              </div>
+            </div>
+            {modalData.pdfUrl && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={(e) => handleOpenPdf(e)}
+                  className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-700 transition"
+                >
+                  {t("Open PDF")}
+                </button>
+               {modalData.showPdf && (
+  <div className="mt-4 w-full h-[100vh]">
+    <iframe 
+      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`} // Use baseURL for PDF iframe src
+      width="100%"
+      height="100%"
+      style={{ border: 'none', minHeight: '500px' }}
+      title="PDF Viewer"
+      className="w-full h-full"
+    />
+    <p className="text-center mt-2">
+      <a 
+        href={`${baseURL}/api/files/${modalData.pdfId}`} // Use baseURL for PDF download link
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline"
+      >
+        {t('Open PDF in new tab')}
+      </a>
+    </p>
+
+             </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

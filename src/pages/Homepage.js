@@ -64,7 +64,7 @@ const Homepage = () => {
       title: isArabic ? post.title_ar : post.title,
       content: isArabic ? post.content_ar : post.content,
       image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
-      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // MODIFIED: Corrected YouTube embed URL
+      video: youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null, // Corrected YouTube embed URL
       pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : null,
       showPdf: post.pdfId && fileExtension(post.pdfId) === 'pdf' // Assuming fileExtension helper exists or logic is applied
     });
@@ -247,7 +247,7 @@ const Homepage = () => {
                 className="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
                 onClick={closeModal}
               >
-                ×
+                &times;
               </button>
               {modalData.image && !modalData.video && (
                 <img
