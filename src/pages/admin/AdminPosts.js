@@ -105,7 +105,7 @@ const AdminPosts = () => {
                         // Display thumbnail if YouTube video, otherwise just a link
                         getYouTubeVideoId(post.video) ? (
                             <img
-                                src={`https://img.youtube.com/vi/${getYouTubeVideoId(post.video)}/0.jpg`} // Standard YouTube thumbnail
+                                src={`https://i.ytimg.com/vi/${getYouTubeVideoId(post.video)}/hqdefault.jpg`}
                                 alt="Video Thumbnail"
                                 className="h-14 w-14 object-cover mx-auto rounded"
                                 onError={(e) => {
