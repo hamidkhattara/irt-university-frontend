@@ -107,7 +107,7 @@ const handleImageClick = (item) => {
         {item.video && youtubeId ? ( // Check if YouTube ID exists
           <div onClick={() => handleImageClick(item)} className="cursor-pointer">
             <img
-              src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
+              src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
@@ -234,7 +234,7 @@ const handleImageClick = (item) => {
             {modalData.video && getYouTubeVideoId(modalData.video) ? (
               <div className="flex justify-center">
                 <iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`} // Updated to a more standard YouTube embed URL
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions

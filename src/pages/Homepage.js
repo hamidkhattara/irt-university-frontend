@@ -106,8 +106,7 @@ export default function Homepage() {
       <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
         {post.video && youtubeId ? ( // Check if YouTube ID exists
           <img
-            // Corrected YouTube thumbnail URL using correct domain and ID
-            src={`https://img.youtube.com/vi/${youtubeId}/0.jpg`} // Updated to a more standard YouTube thumbnail host
+            src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
             alt={title}
             className="w-full h-64 object-cover cursor-pointer"
             onError={(e) => {
@@ -180,7 +179,6 @@ export default function Homepage() {
             {modalData.video && getYouTubeVideoId(modalData.video) ? ( // Check if YouTube ID exists
               <div className="flex justify-center">
                 <iframe
-                  // Corrected YouTube embed URL (embed/ path)
                   src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
