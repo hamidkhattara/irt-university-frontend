@@ -1,33 +1,33 @@
 {
   "about": {
-    "heroTitle": "About IRT University",
+    "heroTitle": "IRT University",
     "heroSubtitle": "Excellence in Education, Innovation in Research",
     "definitionTitle": "Who We Are",
-    "definitionContent": "IRT University is a private institution specializing in science and technology. We integrate both in-person and remote learning, using high-quality resources adapted to the Algerian context. Led by competent doctoral scholars, our mission is to elevate university students from knowledge consumers to contributors in scientific production.",
+    "definitionContent": "IRT Institute is a private university project, focused on science and technology. We combine on-site and online learning, using high-quality resources adapted to the Algerian context. Our mission is to empower students to evolve from knowledge consumers to contributors in scientific production.",
     "missionVisionTitle": "Our Mission & Vision",
     "missionTitle": "Our Mission",
-    "missionContent": "Empowering insights and research in techno-sciences, fostering creativity, specialization, and productivity using highly recommended references.",
+    "missionContent": "Empowering insights and research in science and technology, fostering creativity, specialization, and productivity using highly recommended references.",
     "visionTitle": "Our Vision",
-    "visionContent": "To be a globally renowned university leading the future of education, research, and technological advancements.",
+    "visionContent": "To become a globally recognized university advancing the future of education, research, and technological progress.",
     "valuesTitle": "Our Values",
     "value1Title": "Scientific Approach",
     "value1Content": "We adopt scientific methodologies in teaching, task execution, and decision-making to ensure quality and credibility.",
     "value2Title": "Creativity",
     "value2Content": "We foster an environment that encourages creativity and innovation among professors, administrators, and students.",
     "value3Title": "Specialization",
-    "value3Content": "We respect scientific expertise and ensure tasks are assigned to qualified individuals in their respective fields.",
+    "value3Content": "We value scientific expertise and assign tasks to qualified individuals in their respective fields.",
     "teamTitle": "Our Team & Advisory Board",
-    "teamContent": "Our institution is led by a team of dedicated doctoral scholars and professionals committed to academic excellence and innovation.",
+    "teamContent": "Our institution is led by distinguished scholars and professionals committed to academic excellence and innovation.",
     "historyTitle": "History & Background",
-    "historyContent": "Established with the vision of enhancing higher education in Algeria, IRT University continues to evolve as a leading institution in science and technology, bridging knowledge with real-world applications.",
+    "historyContent": "Founded with the vision of advancing higher education in Algeria, IRT University evolves as a leading institution in science and technology, linking knowledge to real-world applications.",
     "contactTitle": "Contact Us",
-    "contactAddress": "123 University Avenue, City, Country",
-    "contactDetails": "Email: contact@irtuniversity.edu | Phone: +123 456 7890"
+    "contactAddress": "IRT University, Ghardaia, Algeria, 47000",
+    "contactDetails": "Email: contact@irt-dz.org | Phone: +123 560 616 360"
   },
   "contact": {
     "title": "Contact Us",
     "subtitle": "Get in touch with us for any inquiries or support.",
-    "sendMessageTitle": "Send Us a Message",
+    "sendMessageTitle": "Send a Message",
     "nameLabel": "Name",
     "emailLabel": "Email",
     "messageLabel": "Message",
@@ -40,8 +40,8 @@
     "fail": "Failed to send message.",
     "error": "Something went wrong.",
     "detailsTitle": "Our Contact Details",
-    "address": "IRT University",
-    "emailPhone": "Email: irtuniv@gmail.com "
+    "address": "IRT University, Ghardaia, Algeria",
+    "emailPhone": "Email: contact@irt-dz.org "
   },
   "research": {
     "title": "Research & Insights",
@@ -55,7 +55,7 @@
   },
   "footer": {
     "universityName": "IRT University",
-    "email": "Email: irtuniv@gmail.com",
+    "email": "Email: contact@irt-dz.org",
     "rights": "All rights reserved.",
     "facebookAriaLabel": "Visit our Facebook page",
     "instagramAriaLabel": "Visit our Instagram page",
