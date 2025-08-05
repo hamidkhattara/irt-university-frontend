@@ -79,18 +79,30 @@ const handleImageClick = (item) => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const formatContent = (text) => {
+ const formatContent = (text) => {
     if (!text) return "";
-    return text
+    
+    // Regex to find URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    // Replace URLs with clickable anchor tags
+    const textWithLinks = text.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`;
+    });
+
+    // Now, process the text with links for line breaks and bullet points
+    return textWithLinks
       .split("\n")
-      .map((line, index) => {
+      .map((line) => {
+        // Handle markdown-style bullet points
         if (line.trim().startsWith("•")) {
           return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
-        } else if (line.trim() === "") {
-          return "";
-        } else {
+        } 
+        // Handle other line breaks
+        else if (line.trim() !== "") {
           return `<p style="text-align: left;">${line.trim()}</p>`;
         }
+        return "";
       })
       .join("");
   };
