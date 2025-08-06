@@ -2,17 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* No custom font-face declarations here */
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
+  /* Reverted to a generic sans-serif font */
+  font-family: sans-serif;
   background-color: #f9f9f9;
+  font-size: 14px; /* Keeping the base font size for consistency */
 }
+
+/* RTL specific styles for Arabic */
 html[dir="rtl"] body {
   direction: rtl;
   text-align: right;
+  /* Using generic sans-serif, or browser default for Arabic scripts */
 }
 
+/* LTR specific styles for English */
 html[dir="ltr"] body {
   direction: ltr;
   text-align: left;
+  /* Using generic sans-serif */
 }

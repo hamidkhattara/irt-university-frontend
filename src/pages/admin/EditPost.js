@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 const EditPost = () => {
   const { id } = useParams();
@@ -24,6 +25,7 @@ const EditPost = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { i18n } = useTranslation(); // Use useTranslation hook
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   useEffect(() => {
@@ -127,10 +129,38 @@ const EditPost = () => {
     }
   };
 
-  const formatContentWithLinks = (text) => {
+  // MODIFIED formatContentWithLinks FUNCTION for Admin Preview
+  const formatContentWithLinks = (text, isArabic) => {
     if (!text) return "";
+
+    // 1. Handle bolding (**text**)
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 2. Handle coloring ([color:COLORNAME]text[/color])
+    formattedText = formattedText.replace(/\[color:(.*?)]((?!\[color:).*?)\[\/color]/g, '<span style="color:$1;">$2</span>');
+
+    // 3. Handle URLs (https://...)
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`);
+    formattedText = formattedText.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`;
+    });
+
+    // 4. Handle line breaks and bullet points, and apply RTL/LTR styling
+    return formattedText
+      .split("\n")
+      .map((line) => {
+        const style = isArabic ? 'text-align: right; direction: rtl;' : 'text-align: left; direction: ltr;';
+        if (line.trim().startsWith("•")) {
+          // For list items, ensure proper list structure and apply styling
+          return `<li style="${style}">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return ""; // Remove empty lines if they are not part of a paragraph
+        } else {
+          // For paragraphs, apply styling
+          return `<p style="${style}">${line.trim()}</p>`;
+        }
+      })
+      .join("");
   };
 
   if (isLoading) {
@@ -204,6 +234,10 @@ const EditPost = () => {
             onChange={(e) => setPostData({ ...postData, content: e.target.value })}
             required
           />
+          {/* Instruction for bold and color */}
+          <p className="text-sm text-gray-500">
+            Use `**text**` for bold, `[color:red]text[/color]` for colored text (replace `red` with any CSS color name or hex code).
+          </p>
 
           <textarea
             placeholder="Content (Arabic)"
@@ -213,6 +247,10 @@ const EditPost = () => {
             onChange={(e) => setPostData({ ...postData, content_ar: e.target.value })}
             required
           />
+          {/* Instruction for bold and color in Arabic */}
+          <p className="text-sm text-gray-500 text-right">
+            استخدم `**نص**` للخط العريض، `[color:red]نص[/color]` للنص الملون (استبدل `red` بأي اسم لون CSS أو رمز سداسي عشري).
+          </p>
 
           <select
             className="w-full border p-2 rounded"
@@ -351,7 +389,7 @@ const EditPost = () => {
               <h4 className="font-semibold">English Content Preview:</h4>
               <div
                 className="border p-4 rounded"
-                dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content) }}
+                dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content, false) }} // Pass isArabic = false
               />
             </div>
 
@@ -359,7 +397,7 @@ const EditPost = () => {
               <h4 className="font-semibold">Arabic Content Preview:</h4>
               <div
                 className="border p-4 rounded text-right"
-                dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content_ar) }}
+                dangerouslySetInnerHTML={{ __html: formatContentWithLinks(postData.content_ar, true) }} // Pass isArabic = true
               />
             </div>
           </div>

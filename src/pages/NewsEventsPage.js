@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar/Navbar";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
+import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer";
+import axios from "axios";
 
 // Standardized placeholder to a local asset for reliability
-const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
+const placeholderImage = "/images/placeholder-image.png";
 
 const NewsEventsPage = () => {
   const { t, i18n } = useTranslation();
@@ -21,54 +21,76 @@ const NewsEventsPage = () => {
   const [visiblePress, setVisiblePress] = useState(3);
   const [visibleAnnounce, setVisibleAnnounce] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({
+    image: null,
+    title: "",
+    content: "",
+    video: "",
+    pdfUrl: "",
+    showPdf: false,
+  });
 
-  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
-        axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
-        axios.get(`${baseURL}/api/posts?page=news&section=events`),
-        axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
-        axios.get(`${baseURL}/api/posts?page=news&section=announcements`)
-      ]);
-      setNewsList(newsRes.data);
-      setEventsList(eventsRes.data);
-      setPressReleases(pressRes.data);
-      setAnnouncements(announceRes.data);
-    } catch (error) {
-      console.error("Error fetching News & Events content:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [newsRes, eventsRes, pressRes, announceRes] = await Promise.all([
+          axios.get(`${baseURL}/api/posts?page=news&section=webinars-workshops`),
+          axios.get(`${baseURL}/api/posts?page=news&section=events`),
+          axios.get(`${baseURL}/api/posts?page=news&section=press-releases`),
+          axios.get(`${baseURL}/api/posts?page=news&section=announcements`),
+        ]);
+        setNewsList(newsRes.data);
+        setEventsList(eventsRes.data);
+        setPressReleases(pressRes.data);
+        setAnnouncements(announceRes.data);
+      } catch (error) {
+        console.error("Error fetching News & Events content:", error);
+      }
+    };
+    fetchData();
+  }, [baseURL]);
 
-  fetchData();
-}, [baseURL]);
-
- 
   const handleLoadMore = (type) => {
     switch (type) {
-      case "news": setVisibleNews((prev) => prev + 3); break;
-      case "events": setVisibleEvents((prev) => prev + 3); break;
-      case "press": setVisiblePress((prev) => prev + 3); break;
-      case "announce": setVisibleAnnounce((prev) => prev + 3); break;
-      default: break;
+      case "news":
+        setVisibleNews((prev) => prev + 3);
+        break;
+      case "events":
+        setVisibleEvents((prev) => prev + 3);
+        break;
+      case "press":
+        setVisiblePress((prev) => prev + 3);
+        break;
+      case "announce":
+        setVisibleAnnounce((prev) => prev + 3);
+        break;
+      default:
+        break;
     }
   };
 
   const handleShowLess = (type) => {
     switch (type) {
-      case "news": setVisibleNews(3); break;
-      case "events": setVisibleEvents(3); break;
-      case "press": setVisiblePress(3); break;
-      case "announce": setVisibleAnnounce(3); break;
-      default: break;
+      case "news":
+        setVisibleNews(3);
+        break;
+      case "events":
+        setVisibleEvents(3);
+        break;
+      case "press":
+        setVisiblePress(3);
+        break;
+      case "announce":
+        setVisibleAnnounce(3);
+        break;
+      default:
+        break;
     }
   };
 
@@ -77,13 +99,13 @@ useEffect(() => {
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
 
     setModalData({
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage, // Use local placeholder
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
       title,
       content,
       video: post.video || "",
       pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-      pdfId: post.pdfId || "", // Add this line
-      showPdf: false
+      pdfId: post.pdfId || "",
+      showPdf: false,
     });
   };
 
@@ -92,30 +114,27 @@ useEffect(() => {
     setModalData((prev) => ({ ...prev, showPdf: true }));
   };
 
-  const formatContent = (text) => {
+  const formatContent = (text, isArabic) => {
     if (!text) return "";
-    
-    // Regex to find URLs
+
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formattedText = formattedText.replace(/\[color:(.*?)]((?!\[color:).*?)\[\/color]/g, '<span style="color:$1;">$2</span>');
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    
-    // Replace URLs with clickable anchor tags
-    const textWithLinks = text.replace(urlRegex, (url) => {
+    formattedText = formattedText.replace(urlRegex, (url) => {
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`;
     });
 
-    // Now, process the text with links for line breaks and bullet points
-    return textWithLinks
+    return formattedText
       .split("\n")
       .map((line) => {
-        // Handle markdown-style bullet points
+        const style = isArabic ? 'text-align: right; direction: rtl;' : 'text-align: left; direction: ltr;';
         if (line.trim().startsWith("•")) {
-          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
-        } 
-        // Handle other line breaks
-        else if (line.trim() !== "") {
-          return `<p style="text-align: left;">${line.trim()}</p>`;
+          return `<li style="${style}">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="${style}">${line.trim()}</p>`;
         }
-        return "";
       })
       .join("");
   };
@@ -129,23 +148,26 @@ useEffect(() => {
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
     const safeContent = content || "";
     const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
-  
+
     return (
-      <div key={post._id} className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105">
-        {post.video && youtubeId ? ( // Check if YouTube ID exists
+      <div
+        key={post._id}
+        className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105"
+      >
+        {post.video && youtubeId ? (
           <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
               className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
               onError={(e) => {
-                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.src = placeholderImage;
                 e.target.onerror = null;
               }}
             />
           </div>
         ) : (
-          post.imageId ? ( // Render image if imageId exists
+          post.imageId ? (
             <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
               <img
                 src={`${baseURL}/api/files/${post.imageId}`}
@@ -157,7 +179,7 @@ useEffect(() => {
                 }}
               />
             </div>
-          ) : ( // Fallback if neither video nor imageId is present
+          ) : (
             <div className="mb-4">
               <img
                 src={placeholderImage}
@@ -171,11 +193,15 @@ useEffect(() => {
         <p className="text-sm text-gray-500 mt-1">
           {new Date(post.createdAt).toLocaleDateString()}
         </p>
-        <div className="mt-4 text-gray-700">
+        <div
+          className="mt-4 text-gray-700"
+          dir={isArabic ? 'rtl' : 'ltr'}
+          style={{ textAlign: isArabic ? 'right' : 'left' }}
+        >
           {expandedPosts[post._id] || safeContent.length <= 100 ? (
-            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent) }} />
+            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent, isArabic) }} />
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.slice(0, 100)) + "..." }} />
+            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.slice(0, 100), isArabic) + "..." }} />
           )}
         </div>
         {safeContent.length > 100 && (
@@ -224,20 +250,17 @@ useEffect(() => {
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
-
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("newsEvents.title")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">{t("newsEvents.subtitle")}</p>
       </section>
-
       {renderSection("newsEvents.events", eventsList, visibleEvents, "events", "upcoming-events")}
       {renderSection("newsEvents.webinars", newsList, visibleNews, "news", "webinars")}
       {renderSection("newsEvents.press", pressReleases, visiblePress, "press", "press-releases")}
       {renderSection("newsEvents.announcements", announcements, visibleAnnounce, "announce", "announcements")}
-
       {modalData.image && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80  w-screen h-screen"
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
@@ -247,7 +270,7 @@ useEffect(() => {
                   src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
@@ -261,10 +284,12 @@ useEffect(() => {
               </div>
             )}
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">{modalData.title}</h2>
-            <div className="text-center">
-              <div className="inline-block text-left">
-                <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
-              </div>
+            <div
+              className="text-center"
+              dir={isArabic ? 'rtl' : 'ltr'}
+              style={{ textAlign: isArabic ? 'right' : 'left' }}
+            >
+              <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content, isArabic) }} />
             </div>
             {modalData.pdfUrl && (
               <div className="mt-4 text-center">
@@ -275,28 +300,25 @@ useEffect(() => {
                   {t("Open PDF")}
                 </button>
                 {modalData.showPdf && (
-  <div className="mt-4 w-full h-[100vh]">
-    {/* Use baseURL for PDF iframe src as well */}
-    <iframe 
-      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
-      width="100%"
-      height="100%"
-      style={{ border: 'none', minHeight: '500px' }}
-      title="PDF Viewer"
-      className="w-full h-full"
-    />
-    <p className="text-center mt-2">
-      {/* Use baseURL for PDF download link */}
-      <a 
-        href={`${baseURL}/api/files/${modalData.pdfId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        {t('Open PDF in new tab')}
-      </a>
-    </p>
-
+                  <div className="mt-4 w-full h-[100vh]">
+                    <iframe
+                      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none', minHeight: '500px' }}
+                      title="PDF Viewer"
+                      className="w-full h-full"
+                    />
+                    <p className="text-center mt-2">
+                      <a
+                        href={`${baseURL}/api/files/${modalData.pdfId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t('Open PDF in new tab')}
+                      </a>
+                    </p>
                   </div>
                 )}
               </div>
@@ -304,7 +326,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   );

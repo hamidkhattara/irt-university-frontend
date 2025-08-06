@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Navbar from "../components/Navbar/Navbar";
 import { useTranslation } from "react-i18next";
+import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer";
+import axios from "axios";
 
 // Standardized placeholder to a local asset for reliability
-const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
-
+const placeholderImage = "/images/placeholder-image.png";
 
 const ResearchPage = () => {
   const [publications, setPublications] = useState([]);
@@ -16,16 +15,40 @@ const ResearchPage = () => {
   const [visibleProjects, setVisibleProjects] = useState(3);
   const [visibleCollaborations, setVisibleCollaborations] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({
+    image: null,
+    title: "",
+    content: "",
+    video: "",
+    pdfUrl: "",
+    showPdf: false,
+  });
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
 
-  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          axios.get(`${baseURL}/api/posts?page=research&section=latest-publications`),
+          axios.get(`${baseURL}/api/posts?page=research&section=ongoing-projects`),
+          axios.get(`${baseURL}/api/posts?page=research&section=collaborations-partnerships`),
+        ]);
+        setPublications(res1.data);
+        setProjects(res2.data);
+        setCollaborations(res3.data);
+      } catch (err) {
+        console.error("Error fetching research posts", err);
+      }
+    };
+    fetchPosts();
+  }, [baseURL]);
 
   const handleImageClick = (post) => {
     const isArabic = i18n.language === "ar";
@@ -33,13 +56,13 @@ const ResearchPage = () => {
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
 
     setModalData({
-      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage, // Use local placeholder
+      image: post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage,
       title,
       content,
       video: post.video || "",
       pdfUrl: post.pdfId ? `${baseURL}/api/files/${post.pdfId}` : "",
-      pdfId: post.pdfId || "", // Add this line
-      showPdf: false
+      pdfId: post.pdfId || "",
+      showPdf: false,
     });
   };
 
@@ -61,78 +84,59 @@ const ResearchPage = () => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const formatContent = (text) => {
+  const formatContent = (text, isArabic) => {
     if (!text) return "";
-    
-    // Regex to find URLs
+
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formattedText = formattedText.replace(/\[color:(.*?)]((?!\[color:).*?)\[\/color]/g, '<span style="color:$1;">$2</span>');
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    
-    // Replace URLs with clickable anchor tags
-    const textWithLinks = text.replace(urlRegex, (url) => {
+    formattedText = formattedText.replace(urlRegex, (url) => {
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`;
     });
 
-    // Now, process the text with links for line breaks and bullet points
-    return textWithLinks
+    return formattedText
       .split("\n")
       .map((line) => {
-        // Handle markdown-style bullet points
+        const style = isArabic ? 'text-align: right; direction: rtl;' : 'text-align: left; direction: ltr;';
         if (line.trim().startsWith("•")) {
-          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
-        } 
-        // Handle other line breaks
-        else if (line.trim() !== "") {
-          return `<p style="text-align: left;">${line.trim()}</p>`;
+          return `<li style="${style}">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="${style}">${line.trim()}</p>`;
         }
-        return "";
       })
       .join("");
   };
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const [res1, res2, res3] = await Promise.all([
-          axios.get(`${baseURL}/api/posts?page=research&section=latest-publications`),
-          axios.get(`${baseURL}/api/posts?page=research&section=ongoing-projects`),
-          axios.get(`${baseURL}/api/posts?page=research&section=collaborations-partnerships`)
-
-        ]);
-        setPublications(res1.data);
-        setProjects(res2.data);
-        setCollaborations(res3.data);
-      } catch (err) {
-        console.error("Error fetching research posts", err);
-      }   
-    };
-    fetchPosts();
-  }, [baseURL]);
 
   const renderPostCard = (post) => {
     if (!post || !post.title || !post.createdAt) return null;
-
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
     const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
-      <div key={post._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
-        {post.video && youtubeId ? ( // Check if YouTube ID exists
-          <div onClick={() => handleImageClick(post)} className="cursor-pointer">
+      <div
+        key={post._id}
+        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl"
+      >
+        {post.video && youtubeId ? (
+          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
-                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.src = placeholderImage;
                 e.target.onerror = null;
               }}
             />
           </div>
         ) : (
-          <div onClick={() => handleImageClick(post)} className="cursor-pointer">
+          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
             <img
-              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage} // Use local placeholder
+              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
@@ -145,11 +149,15 @@ const ResearchPage = () => {
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-500 mb-2">{formatDate(post.createdAt)}</p>
-          <div className="text-gray-700 text-base mb-2">
+          <div
+            className="text-gray-700 text-base mb-2"
+            dir={isArabic ? 'rtl' : 'ltr'}
+            style={{ textAlign: isArabic ? 'right' : 'left' }}
+          >
             {expandedPosts[post._id] || content.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
+              <div dangerouslySetInnerHTML={{ __html: formatContent(content, isArabic) }} />
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content.substring(0, 100)) + "..." }} />
+              <div dangerouslySetInnerHTML={{ __html: formatContent(content.substring(0, 100), isArabic) + "..." }} />
             )}
           </div>
           {content.length > 100 && (
@@ -183,24 +191,29 @@ const ResearchPage = () => {
 
   const loadLessHandler = (type) => {
     switch (type) {
-      case "publications": setVisiblePublications(3); break;
-      case "projects": setVisibleProjects(3); break;
-      case "collaborations": setVisibleCollaborations(3); break;
-      default: break;
+      case "publications":
+        setVisiblePublications(3);
+        break;
+      case "projects":
+        setVisibleProjects(3);
+        break;
+      case "collaborations":
+        setVisibleCollaborations(3);
+        break;
+      default:
+        break;
     }
   };
 
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
-
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("Research & Insights")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">
           {t("Exploring groundbreaking research, ongoing projects, and global collaborations.")}
         </p>
       </section>
-
       <section id="latest-research" className="container mx-auto px-6 py-16">
         <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">
           {t("Latest Research Publications")}
@@ -235,7 +248,6 @@ const ResearchPage = () => {
           </>
         )}
       </section>
-
       <section id="ongoing-projects" className="container mx-auto px-6 py-16">
         <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t("Ongoing Projects")}</h2>
         {projects.length === 0 ? (
@@ -268,7 +280,6 @@ const ResearchPage = () => {
           </>
         )}
       </section>
-
       <section id="collaborations" className="container mx-auto px-6 py-16">
         <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">
           {t("Collaborations and Partnerships")}
@@ -303,10 +314,9 @@ const ResearchPage = () => {
           </>
         )}
       </section>
-
       {modalData.image && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 w-screen h-screen"
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
@@ -316,7 +326,7 @@ const ResearchPage = () => {
                   src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
@@ -330,10 +340,12 @@ const ResearchPage = () => {
               </div>
             )}
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">{modalData.title}</h2>
-            <div className="text-center">
-              <div className="inline-block text-left">
-                <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
-              </div>
+            <div
+              className="text-center"
+              dir={i18n.language === "ar" ? 'rtl' : 'ltr'}
+              style={{ textAlign: i18n.language === "ar" ? 'right' : 'left' }}
+            >
+              <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content, isArabic) }} />
             </div>
             {modalData.pdfUrl && (
               <div className="mt-4 text-center">
@@ -343,29 +355,26 @@ const ResearchPage = () => {
                 >
                   {t("Open PDF")}
                 </button>
-               {modalData.showPdf && (
-  <div className="mt-4 w-full h-[100vh]">
-    {/* Use baseURL for PDF iframe src as well */}
-    <iframe 
-      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
-      width="100%"
-      height="100%"
-      style={{ border: 'none', minHeight: '500px' }}
-      title="PDF Viewer"
-      className="w-full h-full"
-    />
-    <p className="text-center mt-2">
-      {/* Use baseURL for PDF download link */}
-      <a 
-        href={`${baseURL}/api/files/${modalData.pdfId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        {t('Open PDF in new tab')}
-      </a>
-    </p>
-
+                {modalData.showPdf && (
+                  <div className="mt-4 w-full h-[100vh]">
+                    <iframe
+                      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none', minHeight: '500px' }}
+                      title="PDF Viewer"
+                      className="w-full h-full"
+                    />
+                    <p className="text-center mt-2">
+                      <a
+                        href={`${baseURL}/api/files/${modalData.pdfId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t('Open PDF in new tab')}
+                      </a>
+                    </p>
                   </div>
                 )}
               </div>
@@ -373,7 +382,6 @@ const ResearchPage = () => {
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   );

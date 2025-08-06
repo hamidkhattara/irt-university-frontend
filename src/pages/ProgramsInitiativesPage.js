@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar/Navbar";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
+import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer";
+import axios from "axios";
 
 // Standardized placeholder to a local asset for reliability
-const placeholderImage = "/images/placeholder-image.png"; // Assuming you have this file in your public/images folder
+const placeholderImage = "/images/placeholder-image.png";
 
 const ProgramsInitiativesPage = () => {
   const [innovationLabs, setInnovationLabs] = useState([]);
@@ -15,14 +15,20 @@ const ProgramsInitiativesPage = () => {
   const [incubVisible, setIncubVisible] = useState(3);
   const [fundingVisible, setFundingVisible] = useState(3);
   const [expandedPosts, setExpandedPosts] = useState({});
-  const [modalData, setModalData] = useState({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false });
+  const [modalData, setModalData] = useState({
+    image: null,
+    title: "",
+    content: "",
+    video: "",
+    pdfUrl: "",
+    showPdf: false,
+  });
   const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const { t, i18n } = useTranslation();
 
-  // More robust getYouTubeVideoId function
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
+    const match = url.match(/(?:https?:\/\/)??(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/);
     return match ? match[1] : null;
   };
 
@@ -30,11 +36,10 @@ const ProgramsInitiativesPage = () => {
     const fetchData = async () => {
       try {
         const [labsRes, incubRes, fundingRes] = await Promise.all([
-        axios.get(`${baseURL}/api/posts?page=programs&section=innovation-labs`),
-        axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
-        axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`)
-
-        ]); 
+          axios.get(`${baseURL}/api/posts?page=programs&section=innovation-labs`),
+          axios.get(`${baseURL}/api/posts?page=programs&section=incubation-programs`),
+          axios.get(`${baseURL}/api/posts?page=programs&section=funding-opportunities`),
+        ]);
         setInnovationLabs(labsRes.data);
         setIncubationPrograms(incubRes.data);
         setFundingOpportunities(fundingRes.data);
@@ -54,21 +59,21 @@ const ProgramsInitiativesPage = () => {
     });
   };
 
-const handleImageClick = (item) => {
-  const isArabic = i18n.language === "ar";
-  const title = isArabic ? item.title_ar : item.title;
-  const content = isArabic ? item.content_ar : item.content;
+  const handleImageClick = (item) => {
+    const isArabic = i18n.language === "ar";
+    const title = isArabic ? item.title_ar : item.title;
+    const content = isArabic ? item.content_ar : item.content;
 
-  setModalData({
-    image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage, // Use local placeholder
-    title,
-    content,
-    video: item.video || "",
-    pdfUrl: item.pdfId ? `${baseURL}/api/files/${item.pdfId}` : "",
-    pdfId: item.pdfId || "",
-    showPdf: false
-  });
-};
+    setModalData({
+      image: item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage,
+      title,
+      content,
+      video: item.video || "",
+      pdfUrl: item.pdfId ? `${baseURL}/api/files/${item.pdfId}` : "",
+      pdfId: item.pdfId || "",
+      showPdf: false,
+    });
+  };
 
   const handleOpenPdf = (e) => {
     e.stopPropagation();
@@ -79,30 +84,27 @@ const handleImageClick = (item) => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
- const formatContent = (text) => {
+  const formatContent = (text, isArabic) => {
     if (!text) return "";
-    
-    // Regex to find URLs
+
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formattedText = formattedText.replace(/\[color:(.*?)]((?!\[color:).*?)\[\/color]/g, '<span style="color:$1;">$2</span>');
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    
-    // Replace URLs with clickable anchor tags
-    const textWithLinks = text.replace(urlRegex, (url) => {
+    formattedText = formattedText.replace(urlRegex, (url) => {
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url}</a>`;
     });
 
-    // Now, process the text with links for line breaks and bullet points
-    return textWithLinks
+    return formattedText
       .split("\n")
       .map((line) => {
-        // Handle markdown-style bullet points
+        const style = isArabic ? 'text-align: right; direction: rtl;' : 'text-align: left; direction: ltr;';
         if (line.trim().startsWith("•")) {
-          return `<li style="text-align: left;">${line.replace("•", "").trim()}</li>`;
-        } 
-        // Handle other line breaks
-        else if (line.trim() !== "") {
-          return `<p style="text-align: left;">${line.trim()}</p>`;
+          return `<li style="${style}">${line.replace("•", "").trim()}</li>`;
+        } else if (line.trim() === "") {
+          return "";
+        } else {
+          return `<p style="${style}">${line.trim()}</p>`;
         }
-        return "";
       })
       .join("");
   };
@@ -113,25 +115,28 @@ const handleImageClick = (item) => {
     const content = isArabic ? item.content_ar : item.content;
     const safeContent = content || "";
     const youtubeId = item.video ? getYouTubeVideoId(item.video) : null;
-  
+
     return (
-      <div key={item._id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl">
-        {item.video && youtubeId ? ( // Check if YouTube ID exists
-          <div onClick={() => handleImageClick(item)} className="cursor-pointer">
+      <div
+        key={item._id}
+        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl"
+      >
+        {item.video && youtubeId ? (
+          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(item)}>
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
-                e.target.src = placeholderImage; // Fallback to local placeholder
+                e.target.src = placeholderImage;
                 e.target.onerror = null;
               }}
             />
           </div>
         ) : (
-          <div onClick={() => handleImageClick(item)} className="cursor-pointer">
+          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(item)}>
             <img
-              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage} // Use local placeholder
+              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage}
               alt={title}
               className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
               onError={(e) => {
@@ -144,11 +149,15 @@ const handleImageClick = (item) => {
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-500 mb-2">{formatDate(item.createdAt)}</p>
-          <div className="text-gray-700 text-base">
+          <div
+            className="text-gray-700 text-base"
+            dir={isArabic ? 'rtl' : 'ltr'}
+            style={{ textAlign: isArabic ? 'right' : 'left' }}
+          >
             {expandedPosts[item._id] || safeContent.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent) }} />
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent, isArabic) }} />
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100)) + "..." }} />
+              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100), isArabic) + "..." }} />
             )}
           </div>
           {safeContent.length > 100 && (
@@ -200,14 +209,12 @@ const handleImageClick = (item) => {
   return (
     <div className="bg-white text-gray-900 min-h-screen">
       <Navbar />
-
       <section className="bg-blue-900 text-white py-24 text-center">
         <h1 className="text-5xl font-extrabold">{t("Programs & Initiatives")}</h1>
         <p className="mt-6 text-xl max-w-2xl mx-auto">
           {t("Empowering students and communities through dynamic programs and strategic initiatives.")}
         </p>
       </section>
-
       {renderSection(
         "Innovation Labs",
         innovationLabs,
@@ -216,7 +223,6 @@ const handleImageClick = (item) => {
         "No Innovation Labs available at the moment.",
         "innovation-labs"
       )}
-
       <div className="bg-gray-100 w-full">
         {renderSection(
           "Technology Incubation Programs",
@@ -227,7 +233,6 @@ const handleImageClick = (item) => {
           "technology-incubation"
         )}
       </div>
-
       {renderSection(
         "Research Funding Opportunities",
         fundingOpportunities,
@@ -236,10 +241,9 @@ const handleImageClick = (item) => {
         "No Research Funding Opportunities available at the moment.",
         "research-funding"
       )}
-
       {modalData.image && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 w-screen h-screen"
           onClick={() => setModalData({ image: null, title: "", content: "", video: "", pdfUrl: "", showPdf: false })}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[90vw] max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
@@ -249,7 +253,7 @@ const handleImageClick = (item) => {
                   src={`https://www.youtube.com/embed/${getYouTubeVideoId(modalData.video)}?autoplay=1`}
                   title="YouTube Video"
                   className="w-[800px] h-[450px] rounded-lg mb-4"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" // Standard YouTube iframe permissions
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
@@ -263,10 +267,12 @@ const handleImageClick = (item) => {
               </div>
             )}
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">{modalData.title}</h2>
-            <div className="text-center">
-              <div className="inline-block text-left">
-                <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content) }} />
-              </div>
+            <div
+              className="text-center"
+              dir={i18n.language === "ar" ? 'rtl' : 'ltr'}
+              style={{ textAlign: i18n.language === "ar" ? 'right' : 'left' }}
+            >
+              <div dangerouslySetInnerHTML={{ __html: formatContent(modalData.content, i18n.language === "ar") }} />
             </div>
             {modalData.pdfUrl && (
               <div className="mt-4 text-center">
@@ -276,35 +282,33 @@ const handleImageClick = (item) => {
                 >
                   {t("Open PDF")}
                 </button>
-               {modalData.showPdf && (
-  <div className="mt-4 w-full h-[100vh]">
-    <iframe 
-      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`} // Use baseURL for PDF iframe src
-      width="100%"
-      height="100%"
-      style={{ border: 'none', minHeight: '500px' }}
-      title="PDF Viewer"
-      className="w-full h-full"
-    />
-    <p className="text-center mt-2">
-      <a 
-        href={`${baseURL}/api/files/${modalData.pdfId}`} // Use baseURL for PDF download link
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        {t('Open PDF in new tab')}
-      </a>
-    </p>
-
-             </div>
+                {modalData.showPdf && (
+                  <div className="mt-4 w-full h-[100vh]">
+                    <iframe
+                      src={`${baseURL}/api/files/${modalData.pdfId}#view=fitH`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none', minHeight: '500px' }}
+                      title="PDF Viewer"
+                      className="w-full h-full"
+                    />
+                    <p className="text-center mt-2">
+                      <a
+                        href={`${baseURL}/api/files/${modalData.pdfId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t('Open PDF in new tab')}
+                      </a>
+                    </p>
+                  </div>
                 )}
               </div>
             )}
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   );

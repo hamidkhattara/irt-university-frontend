@@ -65,8 +65,8 @@
   "explore": "Explore IRT University",
   "latestNews": "Latest News & Posts",
   "noPosts": "No posts available yet.",
-  "readMore": "Read More",
-  "showLess": "Show Less",
+  "Read More": "Read More",
+  "Show Less": "Show Less",
   "allRights": "All rights reserved.",
   "newsEvents": {
     "title": "News & Events",
@@ -132,13 +132,13 @@
   "Excellence in Education, Innovation in Research": "A private institution of higher education in the field of science and technology, Empowering Insights and Research in Techno&Sciences. Fostering creativity, ",
   "Explore Programs": "Explore Programs",
   "Load More": "Load More ",
-  "Show Less": "Load More ",
  "Upcoming and Past Events": "Upcoming and Past Events",
   "Webinars and Workshops": "Webinars and Workshops",
   "Press Releases": "Press Releases",
   "Announcements": "Announcements",
-
-  
+  "heroSlider": {
+    "elearnButton": "Access E-Learning Platform"
+  },
   "verifyEmail": {
     "title": "Verify Your Email"
   },
