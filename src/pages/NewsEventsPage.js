@@ -143,43 +143,45 @@ const NewsEventsPage = () => {
     setExpandedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const renderPostCard = (post) => {
+   const renderPostCard = (post) => {
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar || post.description_ar : post.content || post.description;
     const safeContent = content || "";
     const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
-      <div
-        key={post._id}
-        className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105"
+      <div 
+        key={post._id} 
+        className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition transform hover:scale-105" // Removed cursor-pointer and onClick
       >
-        {post.video && youtubeId ? (
-          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
+          <div className="mb-4">
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
-              className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+              className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
               onError={(e) => {
-                e.target.src = placeholderImage;
+                e.target.src = placeholderImage; // Fallback to local placeholder
                 e.target.onerror = null;
               }}
+              onClick={() => handleImageClick(post)} // Image click opens modal
             />
           </div>
         ) : (
-          post.imageId ? (
-            <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
+          post.imageId ? ( // Render image if imageId exists
+            <div className="mb-4">
               <img
                 src={`${baseURL}/api/files/${post.imageId}`}
                 alt={title}
-                className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105"
+                className="w-full aspect-[3/2] object-cover rounded-md transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
                 onError={(e) => {
                   e.target.src = placeholderImage;
                   e.target.onerror = null;
                 }}
+                onClick={() => handleImageClick(post)} // Image click opens modal
               />
             </div>
-          ) : (
+          ) : ( // Fallback if neither video nor imageId is present
             <div className="mb-4">
               <img
                 src={placeholderImage}
@@ -193,28 +195,27 @@ const NewsEventsPage = () => {
         <p className="text-sm text-gray-500 mt-1">
           {new Date(post.createdAt).toLocaleDateString()}
         </p>
+        {/* Show truncated content */}
         <div
           className="mt-4 text-gray-700"
           dir={isArabic ? 'rtl' : 'ltr'}
           style={{ textAlign: isArabic ? 'right' : 'left' }}
-        >
-          {expandedPosts[post._id] || safeContent.length <= 100 ? (
-            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent, isArabic) }} />
-          ) : (
-            <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.slice(0, 100), isArabic) + "..." }} />
-          )}
-        </div>
+          dangerouslySetInnerHTML={{ __html: formatContent(safeContent.slice(0, 100), isArabic) + "..." }}
+        />
+        {/* Reinstated Read More button, now opens modal */}
         {safeContent.length > 100 && (
           <button
-            onClick={() => toggleReadMore(post._id)}
+            onClick={() => handleImageClick(post)} // Read More button now opens the modal
             className="text-blue-700 hover:underline text-sm font-medium"
           >
-            {expandedPosts[post._id] ? t("Show Less") : t("Read More")}
+            {t("Read More")}
           </button>
         )}
       </div>
     );
   };
+
+
 
   const renderSection = (titleKey, list, visibleCount, type, sectionId) => (
     <section id={sectionId} className="container mx-auto px-8 py-16">

@@ -118,38 +118,38 @@ const Homepage = () => {
     }
   };
 
-  const renderPostCard = (post) => {
+   const renderPostCard = (post) => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar : post.title;
     const content = isArabic ? post.content_ar : post.content;
     const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
-      <div
-        key={post._id}
-        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl"
+      <div 
+        key={post._id} 
+        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl" // Removed cursor-pointer and onClick
       >
-        {post.video && youtubeId ? (
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
           <img
             src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
             alt={title}
-            className="w-full h-64 object-cover cursor-pointer"
+            className="w-full h-64 object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
             onError={(e) => {
-              e.target.src = placeholderImage;
+              e.target.src = placeholderImage; // Fallback to local placeholder
               e.target.onerror = null;
             }}
-            onClick={() => handleImageClick(post)}
+            onClick={() => handleImageClick(post)} // Image click opens modal
           />
         ) : (
           <img
             src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
             alt={title}
-            className="w-full h-64 object-cover cursor-pointer"
+            className="w-full h-64 object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
             onError={(e) => {
               e.target.src = placeholderImage;
               e.target.onerror = null;
             }}
-            onClick={() => handleImageClick(post)}
+            onClick={() => handleImageClick(post)} // Image click opens modal
           />
         )}
         <div className="p-6">
@@ -160,18 +160,16 @@ const Homepage = () => {
             dir={isArabic ? 'rtl' : 'ltr'}
             style={{ textAlign: isArabic ? 'right' : 'left' }}
           >
-            {expandedPosts[post._id] || content.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content, isArabic) }} />
-            ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content.slice(0, 100), isArabic) + "..." }} />
-            )}
+            {/* Show truncated content */}
+            <div dangerouslySetInnerHTML={{ __html: formatContent(content.slice(0, 100), isArabic) + "..." }} />
           </div>
+          {/* Reinstated Read More button, now opens modal */}
           {content.length > 100 && (
             <button
-              onClick={() => toggleReadMore(post._id)}
+              onClick={() => handleImageClick(post)} // Read More button now opens the modal
               className="text-blue-700 hover:underline text-sm font-medium"
             >
-              {expandedPosts[post._id] ? t("Show Less") : t("Read More")}
+              {t("Read More")}
             </button>
           )}
         </div>

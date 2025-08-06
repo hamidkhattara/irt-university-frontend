@@ -111,67 +111,68 @@ const ResearchPage = () => {
 
   const renderPostCard = (post) => {
     if (!post || !post.title || !post.createdAt) return null;
+
     const isArabic = i18n.language === "ar";
     const title = isArabic ? post.title_ar || post.title : post.title;
     const content = isArabic ? post.content_ar || post.content || "" : post.content || "";
     const youtubeId = post.video ? getYouTubeVideoId(post.video) : null;
 
     return (
-      <div
-        key={post._id}
-        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl"
+      <div 
+        key={post._id} 
+        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl" // Removed cursor-pointer and onClick
       >
-        {post.video && youtubeId ? (
-          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
+        {post.video && youtubeId ? ( // Check if YouTube ID exists
+          <div className="cursor-pointer">
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
               onError={(e) => {
-                e.target.src = placeholderImage;
+                e.target.src = placeholderImage; // Fallback to local placeholder
                 e.target.onerror = null;
               }}
+              onClick={() => handleImageClick(post)} // Image click opens modal
             />
           </div>
         ) : (
-          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(post)}>
+          <div className="cursor-pointer">
             <img
-              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage}
+              src={post.imageId ? `${baseURL}/api/files/${post.imageId}` : placeholderImage} // Use local placeholder
               alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
               onError={(e) => {
                 e.target.src = placeholderImage;
                 e.target.onerror = null;
               }}
+              onClick={() => handleImageClick(post)} // Image click opens modal
             />
           </div>
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-500 mb-2">{formatDate(post.createdAt)}</p>
+          {/* Show truncated content */}
           <div
             className="text-gray-700 text-base mb-2"
             dir={isArabic ? 'rtl' : 'ltr'}
             style={{ textAlign: isArabic ? 'right' : 'left' }}
-          >
-            {expandedPosts[post._id] || content.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content, isArabic) }} />
-            ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(content.substring(0, 100), isArabic) + "..." }} />
-            )}
-          </div>
-          {content.length > 100 && (
-            <button
-              onClick={() => toggleReadMore(post._id)}
-              className="text-blue-700 hover:underline text-sm font-medium"
-            >
-              {expandedPosts[post._id] ? t("Show Less") : t("Read More")}
-            </button>
-          )}
+            dangerouslySetInnerHTML={{ __html: formatContent(content.substring(0, 100), isArabic) + "..." }}
+          />
         </div>
+        {/* Reinstated Read More button, now opens modal */}
+        {content.length > 100 && (
+          <button
+            onClick={() => handleImageClick(post)} // Read More button now opens the modal
+            className="text-blue-700 hover:underline text-sm font-medium"
+          >
+            {t("Read More")}
+          </button>
+        )}
       </div>
     );
   };
+
 
   const loadMoreHandler = (type) => {
     switch (type) {

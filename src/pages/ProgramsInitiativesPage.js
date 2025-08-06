@@ -109,7 +109,7 @@ const ProgramsInitiativesPage = () => {
       .join("");
   };
 
-  const renderCard = (item) => {
+    const renderCard = (item) => {
     const isArabic = i18n.language === "ar";
     const title = isArabic ? item.title_ar : item.title;
     const content = isArabic ? item.content_ar : item.content;
@@ -117,62 +117,60 @@ const ProgramsInitiativesPage = () => {
     const youtubeId = item.video ? getYouTubeVideoId(item.video) : null;
 
     return (
-      <div
-        key={item._id}
-        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl"
+      <div 
+        key={item._id} 
+        className="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-105 hover:shadow-xl" // Removed cursor-pointer and onClick
       >
-        {item.video && youtubeId ? (
-          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(item)}>
+        {item.video && youtubeId ? ( // Check if YouTube ID exists
+          <div className="cursor-pointer">
             <img
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
               onError={(e) => {
-                e.target.src = placeholderImage;
+                e.target.src = placeholderImage; // Fallback to local placeholder
                 e.target.onerror = null;
               }}
+              onClick={() => handleImageClick(item)} // Image click opens modal
             />
           </div>
         ) : (
-          <div className="cursor-pointer mb-4" onClick={() => handleImageClick(item)}>
+          <div className="cursor-pointer">
             <img
-              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage}
+              src={item.imageId ? `${baseURL}/api/files/${item.imageId}` : placeholderImage} // Use local placeholder
               alt={title}
-              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105"
+              className="w-full aspect-[3/2] object-cover transition-transform hover:scale-105 cursor-pointer" // Keep image clickable
               onError={(e) => {
                 e.target.src = placeholderImage;
                 e.target.onerror = null;
               }}
+              onClick={() => handleImageClick(item)} // Image click opens modal
             />
           </div>
         )}
         <div className="p-6">
           <h3 className="text-2xl font-bold text-blue-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-500 mb-2">{formatDate(item.createdAt)}</p>
+          {/* Show truncated content */}
           <div
             className="text-gray-700 text-base"
             dir={isArabic ? 'rtl' : 'ltr'}
             style={{ textAlign: isArabic ? 'right' : 'left' }}
-          >
-            {expandedPosts[item._id] || safeContent.length <= 100 ? (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent, isArabic) }} />
-            ) : (
-              <div dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100), isArabic) + "..." }} />
-            )}
-          </div>
-          {safeContent.length > 100 && (
-            <button
-              onClick={() => toggleReadMore(item._id)}
-              className="text-blue-700 hover:underline text-sm font-medium"
-            >
-              {expandedPosts[item._id] ? t("Show Less") : t("Read More")}
-            </button>
-          )}
+            dangerouslySetInnerHTML={{ __html: formatContent(safeContent.substring(0, 100), isArabic) + "..." }}
+          />
         </div>
+        {/* Reinstated Read More button, now opens modal */}
+        {safeContent.length > 100 && (
+          <button
+            onClick={() => handleImageClick(item)} // Read More button now opens the modal
+            className="text-blue-700 hover:underline text-sm font-medium"
+          >
+            {t("Read More")}
+          </button>
+        )}
       </div>
     );
   };
-
   const renderSection = (titleKey, data, visibleCount, setVisibleCount, fallbackMessageKey, sectionId) => (
     <section id={sectionId} className="container mx-auto px-6 py-16">
       <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">{t(titleKey)}</h2>
